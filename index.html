@@ -3,22 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>The House Escape: Shock - Pro</title>
+    <title>Escape</title>
     <style>
-        * { box-sizing: border-box; }
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; }
+        /* Ekran Ayarları */
+        * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; }
         
         #game-container {
             width: 100vw; 
             height: 100vh;
-            background-image: url('https://i.ibb.co/d4S58xzP/file-000000001900720aabede9b2a736070a.png'); 
+            /* YENİ HARİTA BURADA */
+            background-image: url('https://i.ibb.co/G4NJVSWg/file-00000000d3cc7246a95df5976c8174ad.png'); 
             background-size: 100% 100%; 
             background-repeat: no-repeat;
             background-position: center;
             position: relative;
-            /* RESMİ NETLEŞTİREN SİHİRLİ KOMUT */
             image-rendering: pixelated;
-            image-rendering: crisp-edges;
         }
 
         canvas {
@@ -29,12 +29,78 @@
             height: 100%;
             z-index: 10;
         }
+
+        /* MOBİL BUTONLAR (JOYSTICK VE RUN) */
+        #ui-layer {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 20;
+            pointer-events: none; /* Tıklamaların alt katmana geçmesi için */
+        }
+
+        .d-pad {
+            position: absolute;
+            bottom: 30px;
+            left: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            pointer-events: auto;
+        }
+
+        .d-pad-row { display: flex; }
+
+        .btn {
+            width: 60px;
+            height: 60px;
+            margin: 5px;
+            background: rgba(0, 255, 255, 0.2);
+            border: 2px solid rgba(0, 255, 255, 0.6);
+            border-radius: 10px;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+            touch-action: manipulation;
+        }
+        .btn:active { background: rgba(0, 255, 255, 0.6); }
+
+        #btnRun {
+            position: absolute;
+            bottom: 40px;
+            right: 40px;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: rgba(255, 0, 0, 0.3);
+            border: 3px solid rgba(255, 0, 0, 0.8);
+            font-size: 20px;
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.5);
+            pointer-events: auto;
+        }
+        #btnRun:active { background: rgba(255, 0, 0, 0.7); }
     </style>
 </head>
 <body>
 
 <div id="game-container">
     <canvas id="gameCanvas"></canvas>
+    
+    <!-- Kullanıcı Arayüzü (Butonlar) -->
+    <div id="ui-layer">
+        <div class="d-pad">
+            <div class="btn" id="btnUp">▲</div>
+            <div class="d-pad-row">
+                <div class="btn" id="btnLeft">◄</div>
+                <div class="btn" id="btnDown">▼</div>
+                <div class="btn" id="btnRight">►</div>
+            </div>
+        </div>
+        <div class="btn" id="btnRun">RUN</div>
+    </div>
 </div>
 
 <script>
@@ -48,79 +114,128 @@
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
-    // Burak Karakteri
-    let burak = {
-        x: window.innerWidth / 2,
-        y: window.innerHeight * 0.7,
-        w: 40,
-        h: 80,
-        speed: 5,
-        color: "#00ffff"
+    // 8 FARKLI KARAKTER RESMİNİ YÜKLEME
+    const imgs = {
+        idleUp: new Image(), walkUp: new Image(),
+        idleDown: new Image(), walkDown: new Image(),
+        idleLeft: new Image(), walkLeft: new Image(),
+        idleRight: new Image(), walkRight: new Image()
     };
 
-    // ÇARPIŞMA KUTULARI (Görseldeki eşyaların yerleri)
-    // Bu kutuların içinden geçemeyecek
-    const hitboxes = [
-        { x: 0.20, y: 0.20, w: 0.08, h: 0.60 }, // Sarkaçlı Saat
-        { x: 0.38, y: 0.30, w: 0.11, h: 0.50 }, // Kitaplık
-        { x: 0.52, y: 0.35, w: 0.08, h: 0.25 }, // Kırık Ayna
-        { x: 0.80, y: 0.10, w: 0.18, h: 0.30 }  // Sağdaki Harita/Duvar
-    ];
+    imgs.idleUp.src = "https://i.ibb.co/YBmnvKR0/1778341855649-1.jpg";
+    imgs.idleDown.src = "https://i.ibb.co/HDfvc589/1778341855649-2.jpg";
+    imgs.idleRight.src = "https://i.ibb.co/bRFJ8XkZ/1778341855649-3.jpg";
+    imgs.idleLeft.src = "https://i.ibb.co/NgVq4cQB/1778341855649-4.jpg";
+    
+    imgs.walkUp.src = "https://i.ibb.co/pBV1FvL2/1778341855649-5.jpg";
+    imgs.walkDown.src = "https://i.ibb.co/ZRzhXFr8/1778341855649-6.jpg";
+    imgs.walkRight.src = "https://i.ibb.co/nq0LFGgd/1778341855649-7.jpg";
+    imgs.walkLeft.src = "https://i.ibb.co/3ZwvfRY/1778341855649-8.jpg";
 
-    let keys = {};
-    window.addEventListener("keydown", e => keys[e.code] = true);
-    window.addEventListener("keyup", e => keys[e.code] = false);
+    // BURAK KARAKTERİ
+    let burak = {
+        x: canvas.width / 2,
+        y: canvas.height * 0.7,
+        w: 50,  // Karakter Genişliği
+        h: 90,  // Karakter Yüksekliği
+        baseSpeed: 3,
+        speed: 3,
+        direction: 'down', // Başlangıçta öne baksın
+        moving: false
+    };
 
-    // Çarpışma Kontrol Fonksiyonu
-    function canMoveTo(newX, newY) {
-        // Ekran sınırları
-        if (newX < 0 || newX > canvas.width - burak.w) return false;
-        if (newY < canvas.height * 0.35 || newY > canvas.height * 0.85) return false;
+    // Kontroller
+    let keys = { up: false, down: false, left: false, right: false, run: false };
 
-        // Eşya sınırları (Hitbox)
-        for (let box of hitboxes) {
-            let bx = box.x * canvas.width;
-            let by = box.y * canvas.height;
-            let bw = box.w * canvas.width;
-            let bh = box.h * canvas.height;
+    // --- KLAVYE KONTROLLERİ (PC İÇİN) ---
+    window.addEventListener("keydown", e => {
+        if(e.code === "ArrowUp" || e.code === "KeyW") keys.up = true;
+        if(e.code === "ArrowDown" || e.code === "KeyS") keys.down = true;
+        if(e.code === "ArrowLeft" || e.code === "KeyA") keys.left = true;
+        if(e.code === "ArrowRight" || e.code === "KeyD") keys.right = true;
+        if(e.code === "ShiftLeft") keys.run = true;
+    });
+    window.addEventListener("keyup", e => {
+        if(e.code === "ArrowUp" || e.code === "KeyW") keys.up = false;
+        if(e.code === "ArrowDown" || e.code === "KeyS") keys.down = false;
+        if(e.code === "ArrowLeft" || e.code === "KeyA") keys.left = false;
+        if(e.code === "ArrowRight" || e.code === "KeyD") keys.right = false;
+        if(e.code === "ShiftLeft") keys.run = false;
+    });
 
-            if (newX < bx + bw && newX + burak.w > bx &&
-                newY < by + bh && newY + burak.h > by) {
-                return false; // Çarpışma var, hareket etme!
-            }
-        }
-        return true;
+    // --- MOBİL BUTON KONTROLLERİ (TELEFON İÇİN) ---
+    function setupButton(id, keyName) {
+        const btn = document.getElementById(id);
+        btn.addEventListener('touchstart', (e) => { e.preventDefault(); keys[keyName] = true; });
+        btn.addEventListener('touchend', (e) => { e.preventDefault(); keys[keyName] = false; });
+        btn.addEventListener('mousedown', (e) => { e.preventDefault(); keys[keyName] = true; });
+        btn.addEventListener('mouseup', (e) => { e.preventDefault(); keys[keyName] = false; });
+        btn.addEventListener('mouseleave', (e) => { e.preventDefault(); keys[keyName] = false; });
     }
+
+    setupButton('btnUp', 'up');
+    setupButton('btnDown', 'down');
+    setupButton('btnLeft', 'left');
+    setupButton('btnRight', 'right');
+    setupButton('btnRun', 'run');
+
+    // Oyun Döngüsü
+    // Animasyon sayacı (Yürüme hissi vermek için)
+    let frameCount = 0;
 
     function update() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        let nextX = burak.x;
-        let nextY = burak.y;
+        // Hız ayarı (RUN butonuna basılıysa hızlanır)
+        burak.speed = keys.run ? burak.baseSpeed * 2.5 : burak.baseSpeed;
+        burak.moving = false;
 
-        if (keys["ArrowLeft"] || keys["KeyA"]) nextX -= burak.speed;
-        if (keys["ArrowRight"] || keys["KeyD"]) nextX += burak.speed;
-        if (keys["ArrowUp"] || keys["KeyW"]) nextY -= burak.speed;
-        if (keys["ArrowDown"] || keys["KeyS"]) nextY += burak.speed;
+        // Hareket ve Yön Belirleme
+        if (keys.up) { burak.y -= burak.speed; burak.direction = 'up'; burak.moving = true; }
+        else if (keys.down) { burak.y += burak.speed; burak.direction = 'down'; burak.moving = true; }
+        
+        if (keys.left) { burak.x -= burak.speed; burak.direction = 'left'; burak.moving = true; }
+        else if (keys.right) { burak.x += burak.speed; burak.direction = 'right'; burak.moving = true; }
 
-        // Sadece çarpışma yoksa konumu güncelle
-        if (canMoveTo(nextX, burak.y)) burak.x = nextX;
-        if (canMoveTo(burak.x, nextY)) burak.y = nextY;
+        // Duvar Sınırları (Haritadan çıkmasın)
+        burak.x = Math.max(0, Math.min(canvas.width - burak.w, burak.x));
+        burak.y = Math.max(canvas.height * 0.4, Math.min(canvas.height - burak.h - 20, burak.y)); // Sadece yerde yürüsün
 
-        // Karakter Çizimi
-        ctx.shadowBlur = 20;
-        ctx.shadowColor = burak.color;
-        ctx.fillStyle = burak.color;
-        ctx.fillRect(burak.x, burak.y, burak.w, burak.h);
-        ctx.shadowBlur = 0;
+        // HANGİ RESMİ ÇİZECEĞİZ?
+        let currentImage;
+        frameCount++;
 
+        if (!burak.moving) {
+            // Duruyorsa "idle" resimleri
+            if (burak.direction === 'up') currentImage = imgs.idleUp;
+            else if (burak.direction === 'down') currentImage = imgs.idleDown;
+            else if (burak.direction === 'left') currentImage = imgs.idleLeft;
+            else if (burak.direction === 'right') currentImage = imgs.idleRight;
+        } else {
+            // Hareket ediyorsa "walk" resimlerini kullan 
+            // (Yürüme animasyonu efekti için belli aralıklarla durma/yürüme resmini değiştiriyoruz)
+            let toggleWalk = (Math.floor(frameCount / 10) % 2 === 0);
+
+            if (burak.direction === 'up') currentImage = toggleWalk ? imgs.walkUp : imgs.idleUp;
+            else if (burak.direction === 'down') currentImage = toggleWalk ? imgs.walkDown : imgs.idleDown;
+            else if (burak.direction === 'left') currentImage = toggleWalk ? imgs.walkLeft : imgs.idleLeft;
+            else if (burak.direction === 'right') currentImage = toggleWalk ? imgs.walkRight : imgs.idleRight;
+        }
+
+        // Karakteri Ekrana Çiz
+        if (currentImage.complete) { // Resim yüklendiyse çiz
+            ctx.drawImage(currentImage, burak.x, burak.y, burak.w, burak.h);
+        }
+
+        // Burak İsmi (Karakterin tam üstünde)
         ctx.fillStyle = "#fff";
-        ctx.font = "bold 18px Courier New";
-        ctx.fillText("Burak", burak.x - 5, burak.y - 12);
+        ctx.font = "bold 16px Courier New";
+        ctx.fillText("Burak", burak.x, burak.y - 10);
 
         requestAnimationFrame(update);
     }
 
+    // Oyunu Başlat
     update();
 </script>
 </body>
