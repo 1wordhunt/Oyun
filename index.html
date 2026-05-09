@@ -3,158 +3,221 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>The House Escape: Shock</title>
+    <title>The House Escape: Shock - Developer Harun</title>
     <style>
-        /* CSS: Atmosferi burada kuruyoruz */
         body {
             margin: 0;
             padding: 0;
-            background-color: #000; /* Kapkara ev atmosferi */
-            color: #00ffff; /* Cyan yazı rengi */
-            font-family: 'Courier New', Courier, monospace; /* Pixel havası için */
+            background-color: #050505;
+            color: #00ffff;
+            font-family: 'Courier New', Courier, monospace;
             overflow: hidden;
             display: flex;
-            flex-direction: column;
+            justify-content: center;
             align-items: center;
+            height: 100vh;
         }
 
         #game-container {
             position: relative;
-            width: 100vw;
-            height: 100vh;
-            max-width: 1000px;
-            max-height: 500px;
-            border: 2px solid #333;
-            margin-top: 20px;
-            background-image: url('https://via.placeholder.com/1000x500/1a1a1a/000000?text=Oda+Arkaplani+Buraya+Gelecek'); /* Geçici görsel */
-            background-size: cover;
+            width: 1000px;
+            height: 500px;
+            border: 4px solid #222;
+            background-color: #1a1a1a;
+            box-shadow: 0 0 50px rgba(0,0,0,0.8);
         }
 
         canvas {
             display: block;
-            width: 100%;
-            height: 100%;
+            image-rendering: pixelated; /* Piksel art havası için */
         }
 
-        /* Üst Panel: Başlık ve Zamanlayıcı */
         #header {
             position: absolute;
-            top: 10px;
+            top: 15px;
             width: 100%;
             text-align: center;
             pointer-events: none;
+            z-index: 10;
         }
 
-        .title { font-size: 20px; text-shadow: 0 0 10px #00ffff; }
-        .timer { font-size: 18px; margin-top: 5px; }
+        .title { font-size: 22px; font-weight: bold; text-shadow: 0 0 10px #00ffff; letter-spacing: 2px; }
+        .timer { font-size: 18px; color: #00cccc; margin-top: 5px; }
 
-        /* Kontroller: RUN Butonu */
         .controls {
             position: absolute;
-            bottom: 20px;
-            right: 20px;
+            bottom: 25px;
+            right: 25px;
             display: flex;
             gap: 15px;
+            z-index: 10;
         }
 
         .btn {
-            width: 70px;
-            height: 70px;
-            border: 2px solid #00ffff;
+            width: 80px;
+            height: 80px;
+            border: 3px solid #00ffff;
             background: rgba(0, 255, 255, 0.1);
             color: #00ffff;
             display: flex;
             justify-content: center;
             align-items: center;
+            font-size: 18px;
             font-weight: bold;
             cursor: pointer;
             user-select: none;
-            border-radius: 8px;
+            border-radius: 12px;
+            transition: 0.1s;
         }
 
-        .btn:active { background: rgba(0, 255, 255, 0.4); }
-
-        /* Sol D-Pad alanı (Şimdilik boş bırakıyoruz, JS ile işleyeceğiz) */
-        #d-pad {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            width: 120px;
-            height: 120px;
-            border: 1px dashed rgba(0, 255, 255, 0.3);
-        }
+        .btn:active { background: rgba(0, 255, 255, 0.4); transform: scale(0.9); }
     </style>
 </head>
 <body>
 
     <div id="game-container">
-        <!-- Oyun Başlığı -->
         <div id="header">
             <div class="title">ŞOK EVDEN KAÇIŞ</div>
             <div class="timer" id="gameTimer">00:00:00</div>
         </div>
 
-        <!-- Burak ve Nesnelerin Çizileceği Tuval -->
         <canvas id="gameCanvas"></canvas>
 
-        <!-- Kontrol Butonları -->
         <div class="controls">
             <div class="btn" id="actionBtn">👊</div>
             <div class="btn" id="runBtn">RUN</div>
         </div>
-
-        <div id="d-pad"></div>
     </div>
 
     <script>
-        // JS: Oyunun Beyni Başlıyor
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
-        // Çözünürlüğü ayarla
         canvas.width = 1000;
         canvas.height = 500;
 
-        // Burak'ın başlangıç özellikleri
+        // Karakter Özellikleri
         let burak = {
-            x: 500,
-            y: 350,
-            width: 40,
-            height: 80,
+            x: 480,
+            y: 300,
+            width: 35,
+            height: 70,
             speed: 3,
-            isRunning: false
+            normalSpeed: 3,
+            runSpeed: 7,
+            isRunning: false,
+            color: "#00ffff"
         };
 
-        // Zamanlayıcıyı başlat
-        let seconds = 0;
-        setInterval(() => {
-            seconds++;
-            let hrs = Math.floor(seconds / 3600).toString().padStart(2, '0');
-            let mins = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
-            let secs = (seconds % 60).toString().padStart(2, '0');
-            document.getElementById('gameTimer').innerText = `${hrs}:${mins}:${secs}`;
-        }, 1000);
+        // Zamanlayıcı
+        let startTime = Date.now();
+        function updateTimer() {
+            let now = Date.now();
+            let diff = now - startTime;
+            let h = Math.floor(diff / 3600000).toString().padStart(2, '0');
+            let m = Math.floor((diff % 3600000) / 60000).toString().padStart(2, '0');
+            let s = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
+            document.getElementById('gameTimer').innerText = `${h}:${m}:${s}`;
+        }
+        setInterval(updateTimer, 1000);
 
-        // RUN Butonu Mantığı
+        // Kontroller
+        let keys = {};
+        window.addEventListener("keydown", e => keys[e.code] = true);
+        window.addEventListener("keyup", e => keys[e.code] = false);
+
         const runBtn = document.getElementById('runBtn');
-        runBtn.addEventListener('mousedown', () => { burak.speed = 7; burak.isRunning = true; });
-        runBtn.addEventListener('mouseup', () => { burak.speed = 3; burak.isRunning = false; });
-        runBtn.addEventListener('touchstart', () => { burak.speed = 7; burak.isRunning = true; });
-        runBtn.addEventListener('touchend', () => { burak.speed = 3; burak.isRunning = false; });
+        const handleRunStart = () => { burak.speed = burak.runSpeed; burak.isRunning = true; };
+        const handleRunEnd = () => { burak.speed = burak.normalSpeed; burak.isRunning = false; };
 
-        // Ana Döngü (Render)
-        function update() {
-            // Ekranı temizle
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        runBtn.addEventListener('mousedown', handleRunStart);
+        runBtn.addEventListener('mouseup', handleRunEnd);
+        runBtn.addEventListener('touchstart', (e) => { e.preventDefault(); handleRunStart(); });
+        runBtn.addEventListener('touchend', (e) => { e.preventDefault(); handleRunEnd(); });
 
-            // Burak'ı çiz (Şimdilik mavi bir dikdörtgen, yarın pixel art'ını ekleriz)
-            ctx.fillStyle = burak.isRunning ? "#ff0000" : "#00ffff"; // Koşarken kırmızı olsun
-            ctx.fillRect(burak.x, burak.y, burak.width, burak.height);
+        function drawMap() {
+            // Arka Plan (Duvar ve Zemin)
+            ctx.fillStyle = "#1a120b"; 
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
             
-            // Burak'ın üstündeki isim
-            ctx.fillStyle = "#00ffff";
-            ctx.font = "16px Courier New";
-            ctx.fillText("Burak", burak.x - 5, burak.y - 10);
+            // Zemin Çizgileri
+            ctx.strokeStyle = "#0a0604";
+            ctx.lineWidth = 2;
+            for(let i = 380; i < canvas.height; i += 30) {
+                ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(canvas.width, i); ctx.stroke();
+            }
+
+            // Portreler (Sol Üst)
+            ctx.fillStyle = "#111";
+            for(let i=0; i<3; i++) {
+                ctx.fillRect(40 + (i*60), 50, 45, 60);
+                ctx.strokeStyle = "#333";
+                ctx.strokeRect(40 + (i*60), 50, 45, 60);
+            }
+
+            // Sarkaçlı Saat (Sol)
+            ctx.fillStyle = "#3e2723";
+            ctx.fillRect(220, 100, 65, 280);
+            ctx.fillStyle = "#fff";
+            ctx.beginPath(); ctx.arc(252, 140, 18, 0, Math.PI*2); ctx.fill();
+
+            // Kitaplık
+            ctx.fillStyle = "#2d1b0e";
+            ctx.fillRect(380, 140, 90, 240);
+            ctx.fillStyle = "#1a0f07";
+            for(let i=0; i<4; i++) ctx.fillRect(385, 160 + (i*55), 80, 8);
+
+            // Kırık Ayna
+            ctx.fillStyle = "#444";
+            ctx.fillRect(520, 150, 60, 110);
+            ctx.strokeStyle = "#666";
+            ctx.strokeRect(520, 150, 60, 110);
+
+            // Harita (Sağ Üst)
+            ctx.fillStyle = "#c2a385";
+            ctx.fillRect(820, 60, 140, 100);
+            ctx.strokeStyle = "#4e342e";
+            ctx.strokeRect(820, 60, 140, 100);
+
+            // Neon Borular
+            ctx.lineWidth = 10;
+            ctx.lineJoin = "round";
+            
+            // Yeşil Boru
+            ctx.shadowBlur = 15; ctx.shadowColor = "#00ff44"; ctx.strokeStyle = "#00ff44";
+            ctx.beginPath(); ctx.moveTo(0, 120); ctx.lineTo(190, 120); ctx.lineTo(190, 420); ctx.stroke();
+
+            // Pembe Boru
+            ctx.shadowBlur = 15; ctx.shadowColor = "#ff00ff"; ctx.strokeStyle = "#ff00ff";
+            ctx.beginPath(); ctx.moveTo(780, 240); ctx.lineTo(960, 240); ctx.lineTo(960, 480); ctx.stroke();
+
+            ctx.shadowBlur = 0; // Sıfırla
+        }
+
+        function update() {
+            // Hareket Mantığı
+            if (keys["ArrowLeft"] || keys["KeyA"]) burak.x -= burak.speed;
+            if (keys["ArrowRight"] || keys["KeyD"]) burak.x += burak.speed;
+            if (keys["ArrowUp"] || keys["KeyW"]) burak.y -= burak.speed;
+            if (keys["ArrowDown"] || keys["KeyS"]) burak.y += burak.speed;
+
+            // Sınırlar
+            burak.x = Math.max(0, Math.min(canvas.width - burak.width, burak.x));
+            burak.y = Math.max(100, Math.min(canvas.height - burak.height, burak.y));
+
+            // Çizim
+            drawMap();
+
+            // Burak Karakteri
+            ctx.fillStyle = burak.isRunning ? "#ff3333" : burak.color;
+            ctx.shadowBlur = 10; ctx.shadowColor = burak.color;
+            ctx.fillRect(burak.x, burak.y, burak.width, burak.height);
+            ctx.shadowBlur = 0;
+
+            // İsim Etiketi
+            ctx.fillStyle = "#ffffff";
+            ctx.font = "14px Courier New";
+            ctx.fillText("Burak", burak.x - 2, burak.y - 10);
 
             requestAnimationFrame(update);
         }
@@ -163,4 +226,3 @@
     </script>
 </body>
 </html>
-
