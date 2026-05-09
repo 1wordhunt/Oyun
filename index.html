@@ -3,27 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>The House Escape: Shock</title>
+    <title>The House Escape: Shock - Pro</title>
     <style>
-        body { margin: 0; background: #000; overflow: hidden; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        * { box-sizing: border-box; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; }
         
         #game-container {
-            position: relative;
-            /* Resim oranını korumak için genişlik/yükseklik ayarı */
-            width: 1000px;
-            height: 500px;
-            /* IMGBB LİNKİNİ BURAYA KOYDUK */
+            width: 100vw; 
+            height: 100vh;
             background-image: url('https://i.ibb.co/d4S58xzP/file-000000001900720aabede9b2a736070a.png'); 
-            background-size: 100% 100%;
+            background-size: 100% 100%; 
             background-repeat: no-repeat;
             background-position: center;
-            border: 2px solid #222;
+            position: relative;
+            /* RESMİ NETLEŞTİREN SİHİRLİ KOMUT */
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
         }
 
         canvas {
             position: absolute;
             top: 0;
             left: 0;
+            width: 100%;
+            height: 100%;
             z-index: 10;
         }
     </style>
@@ -37,53 +40,83 @@
 <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
-    
-    // Canvas boyutlarını kapsayıcıya eşitle
-    canvas.width = 1000;
-    canvas.height = 500;
 
-    // Burak'ın özellikleri
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    // Burak Karakteri
     let burak = {
-        x: 480, // Haritanın ortası
-        y: 330, // Yerdeki tahtaların üzeri
-        w: 35, 
-        h: 75,
-        speed: 4,
+        x: window.innerWidth / 2,
+        y: window.innerHeight * 0.7,
+        w: 40,
+        h: 80,
+        speed: 5,
         color: "#00ffff"
     };
 
-    // Klavye kontrolleri
+    // ÇARPIŞMA KUTULARI (Görseldeki eşyaların yerleri)
+    // Bu kutuların içinden geçemeyecek
+    const hitboxes = [
+        { x: 0.20, y: 0.20, w: 0.08, h: 0.60 }, // Sarkaçlı Saat
+        { x: 0.38, y: 0.30, w: 0.11, h: 0.50 }, // Kitaplık
+        { x: 0.52, y: 0.35, w: 0.08, h: 0.25 }, // Kırık Ayna
+        { x: 0.80, y: 0.10, w: 0.18, h: 0.30 }  // Sağdaki Harita/Duvar
+    ];
+
     let keys = {};
     window.addEventListener("keydown", e => keys[e.code] = true);
     window.addEventListener("keyup", e => keys[e.code] = false);
 
+    // Çarpışma Kontrol Fonksiyonu
+    function canMoveTo(newX, newY) {
+        // Ekran sınırları
+        if (newX < 0 || newX > canvas.width - burak.w) return false;
+        if (newY < canvas.height * 0.35 || newY > canvas.height * 0.85) return false;
+
+        // Eşya sınırları (Hitbox)
+        for (let box of hitboxes) {
+            let bx = box.x * canvas.width;
+            let by = box.y * canvas.height;
+            let bw = box.w * canvas.width;
+            let bh = box.h * canvas.height;
+
+            if (newX < bx + bw && newX + burak.w > bx &&
+                newY < by + bh && newY + burak.h > by) {
+                return false; // Çarpışma var, hareket etme!
+            }
+        }
+        return true;
+    }
+
     function update() {
-        // Ekranı temizle (Sadece karakteri temizler, arka plan resim olduğu için kalır)
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Hareket Mantığı
-        if (keys["ArrowLeft"] || keys["KeyA"]) burak.x -= burak.speed;
-        if (keys["ArrowRight"] || keys["KeyD"]) burak.x += burak.speed;
-        if (keys["ArrowUp"] || keys["KeyW"]) burak.y -= burak.speed;
-        if (keys["ArrowDown"] || keys["KeyS"]) burak.y += burak.speed;
+        let nextX = burak.x;
+        let nextY = burak.y;
 
-        // Ekran sınırları (Duvardan çıkmasın)
-        if (burak.x < 0) burak.x = 0;
-        if (burak.x > canvas.width - burak.w) burak.x = canvas.width - burak.w;
-        if (burak.y < 150) burak.y = 150; // Üst duvar sınırı
-        if (burak.y > 420) burak.y = 420; // Alt sınır
+        if (keys["ArrowLeft"] || keys["KeyA"]) nextX -= burak.speed;
+        if (keys["ArrowRight"] || keys["KeyD"]) nextX += burak.speed;
+        if (keys["ArrowUp"] || keys["KeyW"]) nextY -= burak.speed;
+        if (keys["ArrowDown"] || keys["KeyS"]) nextY += burak.speed;
 
-        // Burak'ı Çiz (Mavi Parlayan Dikdörtgen)
-        ctx.shadowBlur = 15;
+        // Sadece çarpışma yoksa konumu güncelle
+        if (canMoveTo(nextX, burak.y)) burak.x = nextX;
+        if (canMoveTo(burak.x, nextY)) burak.y = nextY;
+
+        // Karakter Çizimi
+        ctx.shadowBlur = 20;
         ctx.shadowColor = burak.color;
         ctx.fillStyle = burak.color;
         ctx.fillRect(burak.x, burak.y, burak.w, burak.h);
         ctx.shadowBlur = 0;
 
-        // İsim Etiketi
         ctx.fillStyle = "#fff";
-        ctx.font = "bold 16px Courier New";
-        ctx.fillText("Burak", burak.x - 5, burak.y - 10);
+        ctx.font = "bold 18px Courier New";
+        ctx.fillText("Burak", burak.x - 5, burak.y - 12);
 
         requestAnimationFrame(update);
     }
