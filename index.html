@@ -9,44 +9,85 @@
         
         #game-container {
             position: relative;
-            width: 1000px; /* Resmin oranına göre ayarlandı */
+            /* Resim oranını korumak için genişlik/yükseklik ayarı */
+            width: 1000px;
             height: 500px;
-            /* RESMİ BURADA ARKA PLAN YAPIYORUZ */
-            background-image: url('background.png'); 
-            background-size: cover;
+            /* IMGBB LİNKİNİ BURAYA KOYDUK */
+            background-image: url('https://i.ibb.co/d4S58xzP/file-000000001900720aabede9b2a736070a.png'); 
+            background-size: 100% 100%;
+            background-repeat: no-repeat;
             background-position: center;
-            border: 2px solid #111;
+            border: 2px solid #222;
         }
 
         canvas {
             position: absolute;
             top: 0;
             left: 0;
-            z-index: 5; /* Karakterin resmin önünde görünmesi için */
+            z-index: 10;
         }
     </style>
 </head>
 <body>
 
 <div id="game-container">
-    <!-- Karakteri ve hareketli objeleri buraya çizeceğiz -->
     <canvas id="gameCanvas"></canvas>
 </div>
 
 <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
+    
+    // Canvas boyutlarını kapsayıcıya eşitle
     canvas.width = 1000;
     canvas.height = 500;
 
-    // Şimdilik sadece boş bir döngü, karakteri eklemeye hazır
+    // Burak'ın özellikleri
+    let burak = {
+        x: 480, // Haritanın ortası
+        y: 330, // Yerdeki tahtaların üzeri
+        w: 35, 
+        h: 75,
+        speed: 4,
+        color: "#00ffff"
+    };
+
+    // Klavye kontrolleri
+    let keys = {};
+    window.addEventListener("keydown", e => keys[e.code] = true);
+    window.addEventListener("keyup", e => keys[e.code] = false);
+
     function update() {
+        // Ekranı temizle (Sadece karakteri temizler, arka plan resim olduğu için kalır)
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        // Buraya ileride "Burak" karakterini çizen kodu ekleyeceğiz
-        
+
+        // Hareket Mantığı
+        if (keys["ArrowLeft"] || keys["KeyA"]) burak.x -= burak.speed;
+        if (keys["ArrowRight"] || keys["KeyD"]) burak.x += burak.speed;
+        if (keys["ArrowUp"] || keys["KeyW"]) burak.y -= burak.speed;
+        if (keys["ArrowDown"] || keys["KeyS"]) burak.y += burak.speed;
+
+        // Ekran sınırları (Duvardan çıkmasın)
+        if (burak.x < 0) burak.x = 0;
+        if (burak.x > canvas.width - burak.w) burak.x = canvas.width - burak.w;
+        if (burak.y < 150) burak.y = 150; // Üst duvar sınırı
+        if (burak.y > 420) burak.y = 420; // Alt sınır
+
+        // Burak'ı Çiz (Mavi Parlayan Dikdörtgen)
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = burak.color;
+        ctx.fillStyle = burak.color;
+        ctx.fillRect(burak.x, burak.y, burak.w, burak.h);
+        ctx.shadowBlur = 0;
+
+        // İsim Etiketi
+        ctx.fillStyle = "#fff";
+        ctx.font = "bold 16px Courier New";
+        ctx.fillText("Burak", burak.x - 5, burak.y - 10);
+
         requestAnimationFrame(update);
     }
+
     update();
 </script>
 </body>
