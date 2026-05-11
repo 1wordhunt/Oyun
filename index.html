@@ -3,56 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>The House Escape - Joystick Pro</title>
+    <title>Escape The Dark - Pro</title>
     <style>
+        /* Ekran ve Pixel Ayarları */
         * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; font-family: 'Courier New', Courier, monospace; }
         
         #game-container {
-            width: 100vw; 
-            height: 100vh;
+            width: 100vw; height: 100vh;
             background-image: url('https://i.ibb.co/G4NJVSWg/file-00000000d3cc7246a95df5976c8174ad.png'); 
-            background-size: 100% 100%; 
-            background-repeat: no-repeat;
-            background-position: center;
+            background-size: 100% 100%; background-repeat: no-repeat; background-position: center;
+            position: relative;
+            /* HARİTAYI CAM GİBİ NETLEŞTİRİR */
+            image-rendering: pixelated; 
+        }
+
+        canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; image-rendering: pixelated; }
+
+        #developer-tag {
+            position: absolute; top: 15px; right: 20px;
+            color: rgba(255, 255, 255, 0.5); font-size: 14px; z-index: 20;
+        }
+
+        /* --- YENI PIXEL GRİ JOYSTICK --- */
+        #joystick-zone {
+            position: absolute; bottom: 40px; left: 40px;
+            width: 130px; height: 130px;
+            z-index: 30; display: flex; justify-content: center; align-items: center;
+        }
+
+        /* Joystick Dış Kısım (Pixel art hissi için gölgeli) */
+        #joystick-base {
+            width: 120px; height: 120px;
+            background: #333; /* Koyu Gri */
+            border: 6px solid #1a1a1a; /* Daha Koyu Sınır */
+            border-radius: 15px; /* Hafif yuvarlak köşeler */
+            box-shadow: inset 0 6px 0 #444, inset 0 -6px 0 #222, 0 8px 0 #000;
             position: relative;
             image-rendering: pixelated;
         }
 
-        canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; }
-
-        #developer-tag {
-            position: absolute; top: 15px; right: 20px;
-            color: rgba(0, 255, 255, 0.8); font-size: 14px; font-weight: bold;
-            text-shadow: 2px 2px 0px #000; z-index: 20;
-        }
-
-        /* --- JOYSTICK TASARIMI --- */
-        #joystick-wrapper {
-            position: absolute; bottom: 50px; left: 50px;
-            width: 120px; height: 120px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 2px solid rgba(0, 255, 255, 0.3);
-            border-radius: 50%; z-index: 30; touch-action: none;
-        }
-
+        /* Joystick Hareketli Top (Pixel art tuş) */
         #joystick-stick {
-            position: absolute; top: 50%; left: 50%;
             width: 50px; height: 50px;
-            background: radial-gradient(circle, #00ffff, #008888);
-            border-radius: 50%; transform: translate(-50%, -50%);
-            box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+            background: #888; /* Açık Gri */
+            border: 4px solid #555;
+            border-radius: 8px;
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: inset 0 4px 0 #aaa, inset 0 -4px 0 #666, 0 5px 0 #222;
+            transition: background 0.1s;
         }
 
-        /* --- RUN BUTONU --- */
+        #joystick-zone:active #joystick-stick { background: #999; }
+
+        /* RUN Butonu */
         #btnRun {
             position: absolute; bottom: 60px; right: 60px;
-            width: 70px; height: 70px; border-radius: 50%;
-            background: radial-gradient(circle, #ff4b4b, #aa0000);
-            border: 2px solid #550000; color: white;
-            font-size: 16px; font-weight: bold;
+            width: 75px; height: 75px; border-radius: 50%;
+            background: radial-gradient(circle, #ff3333, #880000);
+            border: 4px solid #4a0000; color: white;
+            font-size: 18px; font-weight: bold;
             display: flex; justify-content: center; align-items: center;
-            z-index: 30; box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            z-index: 30; text-shadow: 1px 1px 2px #000;
+            box-shadow: inset 0 4px 0 rgba(255,255,255,0.3), 0 8px 0 #330000, 0 10px 15px rgba(0,0,0,0.5);
             touch-action: manipulation;
         }
     </style>
@@ -61,10 +75,12 @@
 
 <div id="game-container">
     <canvas id="gameCanvas"></canvas>
-    <div id="developer-tag">Developer: Harun Sürücü</div>
+    <div id="developer-tag">Dev: Harun Sürücü</div>
     
-    <div id="joystick-wrapper">
-        <div id="joystick-stick"></div>
+    <div id="joystick-zone">
+        <div id="joystick-base">
+            <div id="joystick-stick"></div>
+        </div>
     </div>
     <div id="btnRun">RUN</div>
 </div>
@@ -73,7 +89,7 @@
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
 
-    // Resimleri Yükle
+    // Resimleri Yükle (IBB'den)
     const imgs = {
         idleUp: new Image(), walkUp: new Image(),
         idleDown: new Image(), walkDown: new Image(),
@@ -81,71 +97,95 @@
         idleRight: new Image(), walkRight: new Image()
     };
 
-    imgs.idleUp.src = "https://i.ibb.co/YBmnvKR0/1778341855649-1.jpg";
-    imgs.idleDown.src = "https://i.ibb.co/HDfvc589/1778341855649-2.jpg";
+    // --- YÖN DÜZELTMESİ (Front/Back Swap) ---
+    // User complaint: öne gidince arka oluyor.
+    // Fixed: 'Down' (aşağı/bize doğru) resimleri yüzü bize dönük olanlar.
+    // 'Up' (yukarı/duvara doğru) resimleri sırtı dönük olanlar.
+    
+    imgs.idleDown.src = "https://i.ibb.co/HDfvc589/1778341855649-2.jpg"; // Yüzü bize dönük sabit
+    imgs.walkDown.src = "https://i.ibb.co/ZRzhXFr8/1778341855649-6.jpg"; // Yüzü bize dönük yürüyor
+    
+    imgs.idleUp.src = "https://i.ibb.co/YBmnvKR0/1778341855649-1.jpg";   // Sırtı bize dönük sabit
+    imgs.walkUp.src = "https://i.ibb.co/pBV1FvL2/1778341855649-5.jpg";   // Sırtı bize dönük yürüyor
+
     imgs.idleRight.src = "https://i.ibb.co/bRFJ8XkZ/1778341855649-3.jpg";
     imgs.idleLeft.src = "https://i.ibb.co/NgVq4cQB/1778341855649-4.jpg";
-    imgs.walkUp.src = "https://i.ibb.co/pBV1FvL2/1778341855649-5.jpg";
-    imgs.walkDown.src = "https://i.ibb.co/ZRzhXFr8/1778341855649-6.jpg";
     imgs.walkRight.src = "https://i.ibb.co/nq0LFGgd/1778341855649-7.jpg";
     imgs.walkLeft.src = "https://i.ibb.co/3ZwvfRY/1778341855649-8.jpg";
 
     let burak = {
-        x: 0, y: 0, w: 50, h: 90,
+        x: 0, y: 0, w: 45, h: 80,
         baseSpeed: 3, speed: 3,
         direction: 'down', moving: false
     };
 
     function resizeCanvas() {
-        // Karakterin ekran oranını koru (disappearing fix)
         let relX = burak.x / canvas.width || 0.5;
         let relY = burak.y / canvas.height || 0.7;
-        
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
-        
         burak.x = relX * canvas.width;
         burak.y = relY * canvas.height;
     }
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
-    // --- JOYSTICK MANTIĞI ---
-    const jWrapper = document.getElementById('joystick-wrapper');
+    // --- GRİ PIXEL JOYSTICK SİSTEMİ ---
+    const jZone = document.getElementById('joystick-zone');
     const jStick = document.getElementById('joystick-stick');
     let jInput = { x: 0, y: 0, active: false };
 
-    jWrapper.addEventListener('touchstart', e => { jInput.active = true; handleJoystick(e); });
-    window.addEventListener('touchmove', e => { if(jInput.active) handleJoystick(e); });
+    jZone.addEventListener('touchstart', e => { jInput.active = true; handleJoystick(e); });
+    window.addEventListener('touchmove', e => { if(jInput.active) handleJoystick(e); }, {passive: false});
     window.addEventListener('touchend', () => { 
-        jInput.active = false; 
-        jInput.x = 0; jInput.y = 0;
+        jInput.active = false; jInput.x = 0; jInput.y = 0;
         jStick.style.left = '50%'; jStick.style.top = '50%';
     });
 
     function handleJoystick(e) {
+        if(e.cancelable) e.preventDefault();
         const touch = e.touches[0];
-        const rect = jWrapper.getBoundingClientRect();
+        const rect = jZone.getBoundingClientRect();
         const centerX = rect.left + rect.width / 2;
         const centerY = rect.top + rect.height / 2;
         
         let dx = touch.clientX - centerX;
         let dy = touch.clientY - centerY;
-        const distance = Math.min(Math.sqrt(dx*dx + dy*dy), 50);
+        const maxDist = 45; // Stickin dışarı çıkma sınırı
+        const distance = Math.min(Math.sqrt(dx*dx + dy*dy), maxDist);
         const angle = Math.atan2(dy, dx);
 
-        jInput.x = Math.cos(angle) * (distance / 50);
-        jInput.y = Math.sin(angle) * (distance / 50);
+        // Kod için temizlenmiş giriş (-1 ile 1 arası)
+        jInput.x = Math.cos(angle) * (distance / maxDist);
+        jInput.y = Math.sin(angle) * (distance / maxDist);
 
-        jStick.style.left = (50 + jInput.x * 40) + '%';
-        jStick.style.top = (50 + jInput.y * 40) + '%';
+        // Görsel güncelleme (Pixel hassasiyeti için Math.floor)
+        jStick.style.left = Math.floor(50 + jInput.x * 40) + '%';
+        jStick.style.top = Math.floor(50 + jInput.y * 40) + '%';
     }
 
-    // RUN Butonu
     let isRunning = false;
-    const btnRun = document.getElementById('btnRun');
-    btnRun.addEventListener('touchstart', () => isRunning = true);
-    btnRun.addEventListener('touchend', () => isRunning = false);
+    document.getElementById('btnRun').addEventListener('touchstart', () => isRunning = true);
+    document.getElementById('btnRun').addEventListener('touchend', () => isRunning = false);
+
+    // --- HARİTA VE SİYAH ALAN SINIRLARI (Collision) ---
+    function checkCollision(nextX, nextY) {
+        // Harita oranlarına göre yürüme alanını sınırlıyoruz.
+        // x: Ekran genişliği (0 ile tam arası)
+        if (nextX < 0 || nextX > canvas.width - burak.w) return true;
+
+        // y: DUVAR VE SİYAH ALAN SINIRI (Critically Important)
+        // Karakterin ayaklarının basabileceği en üst nokta (tahtaların bittiği yer)
+        // Haritanın %48'inden yukarısı duvardır, siyah alandır. Oraya çıkamaz.
+        let upperLimit = canvas.height * 0.48;
+        
+        // Karakterin ayaklarının basabileceği en alt nokta (Ekranın altı)
+        let lowerLimit = canvas.height - burak.h - 10;
+
+        if (nextY < upperLimit || nextY > lowerLimit) return true;
+
+        return false; // Çarpışma yok, hareket edebilir
+    }
 
     function update() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -153,42 +193,50 @@
         burak.speed = isRunning ? burak.baseSpeed * 2.5 : burak.baseSpeed;
         burak.moving = false;
 
-        if (jInput.active && Math.abs(jInput.x) + Math.abs(jInput.y) > 0.1) {
+        if (jInput.active && Math.abs(jInput.x) + Math.abs(jInput.y) > 0.15) {
             burak.moving = true;
-            burak.x += jInput.x * burak.speed;
-            burak.y += jInput.y * burak.speed;
+            let nextX = burak.x + jInput.x * burak.speed;
+            let nextY = burak.y + jInput.y * burak.speed;
 
-            // Yön Belirleme
+            // --- KAYGAN ÇARPIŞMA SİSTEMİ (Köşelere girebilmek için) ---
+            // Önce sadece X ekseninde gitmeyi dene
+            if (!checkCollision(nextX, burak.y)) burak.x = nextX;
+            
+            // Sonra sadece Y ekseninde gitmeyi dene
+            if (!checkCollision(burak.x, nextY)) burak.y = nextY;
+
+            // --- YÖN BELİRLEME (Sabitlendi) ---
             if (Math.abs(jInput.x) > Math.abs(jInput.y)) {
                 burak.direction = jInput.x > 0 ? 'right' : 'left';
             } else {
+                // jInput.y > 0 ise ekranın aşağısına (bize doğru) gidiyor demektir = 'down'
                 burak.direction = jInput.y > 0 ? 'down' : 'up';
             }
         }
 
-        // Sınırlar
-        burak.x = Math.max(0, Math.min(canvas.width - burak.w, burak.x));
-        burak.y = Math.max(canvas.height * 0.3, Math.min(canvas.height - burak.h, burak.y));
-
-        // Karakter Çizimi
+        // Karakter Animasyon Döngüsü
         let currentImg;
+        let walkCycle = Math.floor(Date.now() / 150) % 2 === 0;
+
         if (!burak.moving) {
             currentImg = imgs['idle' + burak.direction.charAt(0).toUpperCase() + burak.direction.slice(1)];
         } else {
-            let step = Math.floor(Date.now() / 150) % 2 === 0;
-            currentImg = step ? imgs['walk' + burak.direction.charAt(0).toUpperCase() + burak.direction.slice(1)] : imgs['idle' + burak.direction.charAt(0).toUpperCase() + burak.direction.slice(1)];
+            // Yürürken walk ve idle resimleri arasında geçiş yaparak animasyon hissi veriyoruz
+            currentImg = walkCycle ? imgs['walk' + burak.direction.charAt(0).toUpperCase() + burak.direction.slice(1)] : imgs['idle' + burak.direction.charAt(0).toUpperCase() + burak.direction.slice(1)];
         }
 
+        // Çizim
         if (currentImg && currentImg.complete) {
-            // Şeffaflık Hilesi: Beyaz alanları temizle (DİKKAT: PNG kullanman daha iyi olur)
             ctx.drawImage(currentImg, burak.x, burak.y, burak.w, burak.h);
         }
 
-        // İsim Etiketi
-        ctx.fillStyle = "#00ffff";
+        // İsim Etiketi (Shadow ekledim siyah alanda okunsun diye)
+        ctx.fillStyle = "#fff";
         ctx.font = "bold 16px Courier New";
         ctx.textAlign = "center";
+        ctx.shadowBlur = 4; ctx.shadowColor = "#000";
         ctx.fillText("Burak", burak.x + burak.w/2, burak.y - 10);
+        ctx.shadowBlur = 0; // Sıfırla
 
         requestAnimationFrame(update);
     }
