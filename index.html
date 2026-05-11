@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>The House Escape</title>
+    <title>The House Escape - Joystick Pro</title>
     <style>
-        /* Ekran Ayarları */
         * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; font-family: 'Courier New', Courier, monospace; }
         
@@ -20,105 +19,41 @@
             image-rendering: pixelated;
         }
 
-        canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 10;
-        }
+        canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; }
 
-        /* Geliştirici İmzası */
         #developer-tag {
-            position: absolute;
-            top: 15px;
-            right: 20px;
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 14px;
-            font-weight: bold;
-            text-shadow: 2px 2px 0px #000;
-            z-index: 20;
-            pointer-events: none;
+            position: absolute; top: 15px; right: 20px;
+            color: rgba(0, 255, 255, 0.8); font-size: 14px; font-weight: bold;
+            text-shadow: 2px 2px 0px #000; z-index: 20;
         }
 
-        /* --- PROFESYONEL OYUN KONSOLU ARAYÜZÜ --- */
-        #ui-layer {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 20;
-            pointer-events: none; 
+        /* --- JOYSTICK TASARIMI --- */
+        #joystick-wrapper {
+            position: absolute; bottom: 50px; left: 50px;
+            width: 120px; height: 120px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(0, 255, 255, 0.3);
+            border-radius: 50%; z-index: 30; touch-action: none;
         }
 
-        /* D-Pad (Yön Tuşları) */
-        .d-pad {
-            position: absolute;
-            bottom: 40px;
-            left: 40px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            pointer-events: auto;
+        #joystick-stick {
+            position: absolute; top: 50%; left: 50%;
+            width: 50px; height: 50px;
+            background: radial-gradient(circle, #00ffff, #008888);
+            border-radius: 50%; transform: translate(-50%, -50%);
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
         }
 
-        .d-pad-row { display: flex; }
-
-        .btn-dir {
-            width: 55px;
-            height: 55px;
-            margin: 2px;
-            background: linear-gradient(to bottom, #444, #222);
-            border: 2px solid #111;
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 22px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: inset 0 2px 5px rgba(255,255,255,0.1), 0 5px 0 #111, 0 8px 10px rgba(0,0,0,0.5);
-            border-radius: 8px;
-            touch-action: manipulation;
-            transition: all 0.05s ease;
-        }
-        
-        .btn-dir:active { 
-            transform: translateY(5px);
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.5), 0 0px 0 #111, 0 2px 5px rgba(0,0,0,0.5);
-            background: linear-gradient(to bottom, #333, #111);
-            color: rgba(255, 255, 255, 0.9);
-        }
-
-        /* D-Pad Özel Şekillendirme */
-        #btnUp { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
-        #btnDown { border-top-left-radius: 0; border-top-right-radius: 0; }
-        #btnLeft { border-top-right-radius: 0; border-bottom-right-radius: 0; }
-        #btnRight { border-top-left-radius: 0; border-bottom-left-radius: 0; }
-
-        /* RUN (Koşma) Butonu - Arcade Style */
+        /* --- RUN BUTONU --- */
         #btnRun {
-            position: absolute;
-            bottom: 50px;
-            right: 50px;
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background: linear-gradient(to bottom, #ff4b4b, #aa0000);
-            border: 2px solid #4a0000;
-            color: white;
-            font-size: 20px;
-            font-weight: bold;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: inset 0 5px 10px rgba(255,255,255,0.3), 0 8px 0 #550000, 0 12px 15px rgba(0,0,0,0.6);
-            pointer-events: auto;
+            position: absolute; bottom: 60px; right: 60px;
+            width: 70px; height: 70px; border-radius: 50%;
+            background: radial-gradient(circle, #ff4b4b, #aa0000);
+            border: 2px solid #550000; color: white;
+            font-size: 16px; font-weight: bold;
+            display: flex; justify-content: center; align-items: center;
+            z-index: 30; box-shadow: 0 5px 15px rgba(0,0,0,0.5);
             touch-action: manipulation;
-            text-shadow: 1px 1px 2px #000;
-            transition: all 0.05s ease;
-        }
-        #btnRun:active { 
-            transform: translateY(8px);
-            box-shadow: inset 0 5px 10px rgba(0,0,0,0.4), 0 0px 0 #550000, 0 4px 10px rgba(0,0,0,0.6);
-            background: linear-gradient(to bottom, #dd0000, #880000);
         }
     </style>
 </head>
@@ -126,33 +61,19 @@
 
 <div id="game-container">
     <canvas id="gameCanvas"></canvas>
+    <div id="developer-tag">Developer: Harun Sürücü</div>
     
-    <div id="ui-layer">
-        <div id="developer-tag">Developer: Harun Sürücü</div>
-        
-        <div class="d-pad">
-            <div class="btn-dir" id="btnUp">▲</div>
-            <div class="d-pad-row">
-                <div class="btn-dir" id="btnLeft">◄</div>
-                <div class="btn-dir" id="btnDown">▼</div>
-                <div class="btn-dir" id="btnRight">►</div>
-            </div>
-        </div>
-        <div id="btnRun">RUN</div>
+    <div id="joystick-wrapper">
+        <div id="joystick-stick"></div>
     </div>
+    <div id="btnRun">RUN</div>
 </div>
 
 <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
 
-    function resizeCanvas() {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-    }
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
-
+    // Resimleri Yükle
     const imgs = {
         idleUp: new Image(), walkUp: new Image(),
         idleDown: new Image(), walkDown: new Image(),
@@ -164,117 +85,113 @@
     imgs.idleDown.src = "https://i.ibb.co/HDfvc589/1778341855649-2.jpg";
     imgs.idleRight.src = "https://i.ibb.co/bRFJ8XkZ/1778341855649-3.jpg";
     imgs.idleLeft.src = "https://i.ibb.co/NgVq4cQB/1778341855649-4.jpg";
-    
     imgs.walkUp.src = "https://i.ibb.co/pBV1FvL2/1778341855649-5.jpg";
     imgs.walkDown.src = "https://i.ibb.co/ZRzhXFr8/1778341855649-6.jpg";
     imgs.walkRight.src = "https://i.ibb.co/nq0LFGgd/1778341855649-7.jpg";
     imgs.walkLeft.src = "https://i.ibb.co/3ZwvfRY/1778341855649-8.jpg";
 
     let burak = {
-        x: canvas.width / 2,
-        y: canvas.height * 0.6,
-        w: 45,  
-        h: 85,  
-        baseSpeed: 3,
-        speed: 3,
-        direction: 'down',
-        moving: false
+        x: 0, y: 0, w: 50, h: 90,
+        baseSpeed: 3, speed: 3,
+        direction: 'down', moving: false
     };
 
-    let keys = { up: false, down: false, left: false, right: false, run: false };
-
-    window.addEventListener("keydown", e => {
-        if(e.code === "ArrowUp" || e.code === "KeyW") keys.up = true;
-        if(e.code === "ArrowDown" || e.code === "KeyS") keys.down = true;
-        if(e.code === "ArrowLeft" || e.code === "KeyA") keys.left = true;
-        if(e.code === "ArrowRight" || e.code === "KeyD") keys.right = true;
-        if(e.code === "ShiftLeft") keys.run = true;
-    });
-    window.addEventListener("keyup", e => {
-        if(e.code === "ArrowUp" || e.code === "KeyW") keys.up = false;
-        if(e.code === "ArrowDown" || e.code === "KeyS") keys.down = false;
-        if(e.code === "ArrowLeft" || e.code === "KeyA") keys.left = false;
-        if(e.code === "ArrowRight" || e.code === "KeyD") keys.right = false;
-        if(e.code === "ShiftLeft") keys.run = false;
-    });
-
-    function setupButton(id, keyName) {
-        const btn = document.getElementById(id);
-        btn.addEventListener('touchstart', (e) => { e.preventDefault(); keys[keyName] = true; });
-        btn.addEventListener('touchend', (e) => { e.preventDefault(); keys[keyName] = false; });
-        btn.addEventListener('mousedown', (e) => { e.preventDefault(); keys[keyName] = true; });
-        btn.addEventListener('mouseup', (e) => { e.preventDefault(); keys[keyName] = false; });
-        btn.addEventListener('mouseleave', (e) => { e.preventDefault(); keys[keyName] = false; });
-    }
-
-    setupButton('btnUp', 'up');
-    setupButton('btnDown', 'down');
-    setupButton('btnLeft', 'left');
-    setupButton('btnRight', 'right');
-    setupButton('btnRun', 'run');
-
-    // --- YENİ KAYGAN ÇARPIŞMA SİSTEMİ (Duvarlara Takılmadan Kayma) ---
-    function canMove(newX, newY) {
-        // Üst sınırı 0.25'e çektim (Eski 0.4'tü), artık odanın arka köşelerine girebilirsin!
-        if (newX < 0 || newX > canvas.width - burak.w) return false;
-        if (newY < canvas.height * 0.25 || newY > canvas.height - burak.h) return false;
+    function resizeCanvas() {
+        // Karakterin ekran oranını koru (disappearing fix)
+        let relX = burak.x / canvas.width || 0.5;
+        let relY = burak.y / canvas.height || 0.7;
         
-        // EĞER İLERİDE MASANIN/KOLTUĞUN İÇİNDEN GEÇMESİN İSTERSEN BURAYA KUTU(HITBOX) EKLERİZ
-        return true; 
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        burak.x = relX * canvas.width;
+        burak.y = relY * canvas.height;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    // --- JOYSTICK MANTIĞI ---
+    const jWrapper = document.getElementById('joystick-wrapper');
+    const jStick = document.getElementById('joystick-stick');
+    let jInput = { x: 0, y: 0, active: false };
+
+    jWrapper.addEventListener('touchstart', e => { jInput.active = true; handleJoystick(e); });
+    window.addEventListener('touchmove', e => { if(jInput.active) handleJoystick(e); });
+    window.addEventListener('touchend', () => { 
+        jInput.active = false; 
+        jInput.x = 0; jInput.y = 0;
+        jStick.style.left = '50%'; jStick.style.top = '50%';
+    });
+
+    function handleJoystick(e) {
+        const touch = e.touches[0];
+        const rect = jWrapper.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        
+        let dx = touch.clientX - centerX;
+        let dy = touch.clientY - centerY;
+        const distance = Math.min(Math.sqrt(dx*dx + dy*dy), 50);
+        const angle = Math.atan2(dy, dx);
+
+        jInput.x = Math.cos(angle) * (distance / 50);
+        jInput.y = Math.sin(angle) * (distance / 50);
+
+        jStick.style.left = (50 + jInput.x * 40) + '%';
+        jStick.style.top = (50 + jInput.y * 40) + '%';
     }
 
-    let frameCount = 0;
+    // RUN Butonu
+    let isRunning = false;
+    const btnRun = document.getElementById('btnRun');
+    btnRun.addEventListener('touchstart', () => isRunning = true);
+    btnRun.addEventListener('touchend', () => isRunning = false);
 
     function update() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        burak.speed = keys.run ? burak.baseSpeed * 2.5 : burak.baseSpeed;
+        
+        burak.speed = isRunning ? burak.baseSpeed * 2.5 : burak.baseSpeed;
         burak.moving = false;
 
-        // X ve Y eksenlerini ayırdık, böylece çapraz giderken duvara çarparsan takılmaz, kenardan kayar.
-        let nextX = burak.x;
-        let nextY = burak.y;
+        if (jInput.active && Math.abs(jInput.x) + Math.abs(jInput.y) > 0.1) {
+            burak.moving = true;
+            burak.x += jInput.x * burak.speed;
+            burak.y += jInput.y * burak.speed;
 
-        if (keys.up) { nextY -= burak.speed; burak.direction = 'up'; burak.moving = true; }
-        else if (keys.down) { nextY += burak.speed; burak.direction = 'down'; burak.moving = true; }
-        
-        if (keys.left) { nextX -= burak.speed; burak.direction = 'left'; burak.moving = true; }
-        else if (keys.right) { nextX += burak.speed; burak.direction = 'right'; burak.moving = true; }
+            // Yön Belirleme
+            if (Math.abs(jInput.x) > Math.abs(jInput.y)) {
+                burak.direction = jInput.x > 0 ? 'right' : 'left';
+            } else {
+                burak.direction = jInput.y > 0 ? 'down' : 'up';
+            }
+        }
 
-        // Duvara çarpıyorsa dur, çarpmıyorsa ilerle
-        if (canMove(nextX, burak.y)) burak.x = nextX;
-        if (canMove(burak.x, nextY)) burak.y = nextY;
+        // Sınırlar
+        burak.x = Math.max(0, Math.min(canvas.width - burak.w, burak.x));
+        burak.y = Math.max(canvas.height * 0.3, Math.min(canvas.height - burak.h, burak.y));
 
-        let currentImage;
-        frameCount++;
-
+        // Karakter Çizimi
+        let currentImg;
         if (!burak.moving) {
-            if (burak.direction === 'up') currentImage = imgs.idleUp;
-            else if (burak.direction === 'down') currentImage = imgs.idleDown;
-            else if (burak.direction === 'left') currentImage = imgs.idleLeft;
-            else if (burak.direction === 'right') currentImage = imgs.idleRight;
+            currentImg = imgs['idle' + burak.direction.charAt(0).toUpperCase() + burak.direction.slice(1)];
         } else {
-            let toggleWalk = (Math.floor(frameCount / 10) % 2 === 0);
-            if (burak.direction === 'up') currentImage = toggleWalk ? imgs.walkUp : imgs.idleUp;
-            else if (burak.direction === 'down') currentImage = toggleWalk ? imgs.walkDown : imgs.idleDown;
-            else if (burak.direction === 'left') currentImage = toggleWalk ? imgs.walkLeft : imgs.idleLeft;
-            else if (burak.direction === 'right') currentImage = toggleWalk ? imgs.walkRight : imgs.idleRight;
+            let step = Math.floor(Date.now() / 150) % 2 === 0;
+            currentImg = step ? imgs['walk' + burak.direction.charAt(0).toUpperCase() + burak.direction.slice(1)] : imgs['idle' + burak.direction.charAt(0).toUpperCase() + burak.direction.slice(1)];
         }
 
-        if (currentImage.complete) { 
-            ctx.drawImage(currentImage, burak.x, burak.y, burak.w, burak.h);
+        if (currentImg && currentImg.complete) {
+            // Şeffaflık Hilesi: Beyaz alanları temizle (DİKKAT: PNG kullanman daha iyi olur)
+            ctx.drawImage(currentImg, burak.x, burak.y, burak.w, burak.h);
         }
 
-        ctx.fillStyle = "#fff";
+        // İsim Etiketi
+        ctx.fillStyle = "#00ffff";
         ctx.font = "bold 16px Courier New";
-        ctx.shadowBlur = 4;
-        ctx.shadowColor = "#000";
-        ctx.fillText("Burak", burak.x + 2, burak.y - 10);
-        ctx.shadowBlur = 0; // Diğer çizimleri bozmaması için sıfırla
+        ctx.textAlign = "center";
+        ctx.fillText("Burak", burak.x + burak.w/2, burak.y - 10);
 
         requestAnimationFrame(update);
     }
-
     update();
 </script>
 </body>
