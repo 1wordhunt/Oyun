@@ -13,7 +13,6 @@
             width: 100%; 
             height: 100%; 
             font-family: sans-serif; 
-            /* Mobilde metin seçimini ve dokunmatik efektleri kapat */
             user-select: none;
             -webkit-user-select: none;
             touch-action: none; 
@@ -28,9 +27,9 @@
             display: block; 
             width: 100%; 
             height: 100%; 
+            object-fit: cover; /* Bilgisayarda da ekrana tam sığdırır */
         }
         
-        /* UI Elemanları */
         #dev-tag { 
             position: absolute; 
             top: 15px; 
@@ -50,7 +49,7 @@
             right: 20px; 
             width: 80px; 
             height: 80px; 
-            background: rgba(0, 0, 0, 0.6); 
+            background: rgba(0, 0, 0, 0.7); 
             border: 2px solid #fff; 
             border-radius: 50%; 
             color: white; 
@@ -60,18 +59,18 @@
             cursor: pointer; 
             font-weight: bold; 
             z-index: 10;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
         }
 
-        /* Sanal Joystick */
         #joystick-area {
             position: absolute;
             bottom: 30px;
             left: 30px;
             width: 120px;
             height: 120px;
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
             border-radius: 50%;
-            border: 2px solid rgba(255, 255, 255, 0.5);
+            border: 2px solid rgba(255, 255, 255, 0.3);
             z-index: 10;
             display: flex;
             justify-content: center;
@@ -80,10 +79,10 @@
         #joystick-stick {
             width: 50px;
             height: 50px;
-            background: rgba(255, 255, 255, 0.7);
+            background: rgba(255, 255, 255, 0.6);
             border-radius: 50%;
             position: absolute;
-            pointer-events: none; /* Tıklamayı engellemesin */
+            pointer-events: none; 
         }
     </style>
 </head>
@@ -104,8 +103,15 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const doorBtn = document.getElementById('door-btn');
+const joyArea = document.getElementById('joystick-area');
+const joyStick = document.getElementById('joystick-stick');
 
-// Ekran boyutunu tam ayarla
+// Bilgisayar / Mobil Algılama (Bilgisayarsa joystick'i gizle)
+const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+if (!isTouchDevice) {
+    joyArea.style.display = 'none';
+}
+
 function resizeCanvas() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
@@ -114,19 +120,18 @@ window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
 
 // Oyun Durumu
-let currentMap = 'outside'; // 'outside' = Dışarısı, 'inside' = İçerisi
+let currentMap = 'outside'; 
 let player = {
-    x: canvas.width / 2, 
-    y: canvas.height / 2,
-    speed: 5,
-    width: 80, height: 80,
+    x: canvas.width / 2 - 25, 
+    y: canvas.height / 2 + 50,
+    speed: 4,
+    width: 50, height: 50, // Karakter boyutu küçültüldü
     direction: 'down',
     isMoving: false
 };
 
 let moveVector = { x: 0, y: 0 };
 
-// Görselleri Yükle
 const images = {
     maps: {
         outside: 'https://i.ibb.co/9kYVv8HF/MG-20260513-WA0001.jpg',
@@ -155,9 +160,52 @@ function preload() {
 }
 preload();
 
+// --- KLAVYE (WASD) KONTROLLERİ ---
+const keys = { w: false, a: false, s: false, d: false, ArrowUp: false, ArrowDown: false, ArrowLeft: false, ArrowRight: false };
+
+window.addEventListener('keydown', (e) => {
+    if (keys.hasOwnProperty(e.key)) {
+        keys[e.key] = true;
+        updateKeyboardMove();
+    }
+});
+
+window.addEventListener('keyup', (e) => {
+    if (keys.hasOwnProperty(e.key)) {
+        keys[e.key] = false;
+        updateKeyboardMove();
+    }
+});
+
+function updateKeyboardMove() {
+    if (isDragging) return; // Joystick kullanılıyorsa klavyeyi ezme
+    
+    let dx = 0, dy = 0;
+    if (keys.w || keys.ArrowUp) dy = -1;
+    if (keys.s || keys.ArrowDown) dy = 1;
+    if (keys.a || keys.ArrowLeft) dx = -1;
+    if (keys.d || keys.ArrowRight) dx = 1;
+    
+    if (dx !== 0 || dy !== 0) {
+        player.isMoving = true;
+        // Çapraz gidişlerde hızı dengele
+        let length = Math.hypot(dx, dy);
+        moveVector.x = dx / length;
+        moveVector.y = dy / length;
+        
+        if (Math.abs(dx) > Math.abs(dy)) {
+            player.direction = dx > 0 ? 'right' : 'left';
+        } else {
+            player.direction = dy > 0 ? 'down' : 'up';
+        }
+    } else {
+        player.isMoving = false;
+        moveVector.x = 0;
+        moveVector.y = 0;
+    }
+}
+
 // --- JOYSTICK KONTROLLERİ ---
-const joyArea = document.getElementById('joystick-area');
-const joyStick = document.getElementById('joystick-stick');
 let isDragging = false;
 let joyCenter = { x: 0, y: 0 };
 
@@ -182,7 +230,6 @@ function drag(e) {
     let distance = Math.hypot(dx, dy);
     let maxDist = joyArea.clientWidth / 2;
 
-    // Stick'i sınır içinde tut
     if (distance > maxDist) {
         dx = (dx / distance) * maxDist;
         dy = (dy / distance) * maxDist;
@@ -190,13 +237,10 @@ function drag(e) {
 
     joyStick.style.transform = `translate(${dx}px, ${dy}px)`;
 
-    // Hareket vektörünü hesapla (-1 ile 1 arası)
     moveVector.x = dx / maxDist;
     moveVector.y = dy / maxDist;
-
     player.isMoving = true;
     
-    // Yönü belirle (Animasyon için)
     if (Math.abs(dx) > Math.abs(dy)) {
         player.direction = dx > 0 ? 'right' : 'left';
     } else {
@@ -209,22 +253,22 @@ function endDrag() {
     joyStick.style.transform = `translate(0px, 0px)`;
     moveVector = { x: 0, y: 0 };
     player.isMoving = false;
+    updateKeyboardMove(); // Bırakıldığında klavyede basılı tuş varsa ona dön
 }
 
 // --- HARİTA VE KAPI İŞLEMLERİ ---
 function toggleMap() {
     if (currentMap === 'outside') {
         currentMap = 'inside';
-        player.x = canvas.width / 2; 
-        player.y = canvas.height - 150; // İçeri girince kapı önüne (alta) at
+        player.x = canvas.width / 2 - player.width / 2; 
+        player.y = canvas.height - 150; // İçeri girince kapı butonundan yeterince uzakta doğ
         player.direction = 'up';
     } else {
         currentMap = 'outside';
-        player.x = canvas.width / 2; 
-        player.y = canvas.height / 2 + 50; // Dışarı çıkınca kapı önüne at
+        player.x = canvas.width / 2 - player.width / 2; 
+        player.y = canvas.height / 2 + 60; // Dışarı çıkınca kapı butonundan uzakta doğ
         player.direction = 'down';
     }
-    // Butonu geçici gizle ki spam olmasın
     doorBtn.style.display = 'none'; 
 }
 
@@ -233,22 +277,21 @@ function update() {
         player.x += moveVector.x * player.speed;
         player.y += moveVector.y * player.speed;
         
-        // Ekran dışına çıkmayı engelle
         player.x = Math.max(0, Math.min(player.x, canvas.width - player.width));
         player.y = Math.max(0, Math.min(player.y, canvas.height - player.height));
     }
 
-    // Kapı Kontrolü (Yaklaşınca Buton Çıksın)
+    // Kapı Kontrolü
     let nearDoor = false;
     
     if (currentMap === 'outside') {
-        // Dışarıdaki kapı konumu (Ekranın ortasından biraz yukarıda)
-        if (player.x > canvas.width/2 - 100 && player.x < canvas.width/2 + 100 && player.y < canvas.height/2) {
+        // Evin kapısı haritanın yaklaşık orta-üst tarafında
+        if (player.x > canvas.width/2 - 70 && player.x < canvas.width/2 + 70 && player.y < canvas.height/2 - 10) {
             nearDoor = true;
         }
     } else if (currentMap === 'inside') {
-        // İçerideki çıkış konumu (Ekranın en altı)
-        if (player.y > canvas.height - 200) {
+        // İçerideki kapı (Ekranın en altı)
+        if (player.y > canvas.height - 80) { // Sadece iyice aşağı inince buton çıkar
             nearDoor = true;
         }
     }
@@ -259,19 +302,13 @@ function update() {
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    // Haritayı Çiz (Ekrana Tam Sığdır)
     if (loadedImages[currentMap]) {
         ctx.drawImage(loadedImages[currentMap], 0, 0, canvas.width, canvas.height);
     }
 
-    // Karakteri Çiz
     let spriteKey = (player.isMoving ? 'walk_' : 'stand_') + (player.direction === 'up' ? 'back' : player.direction === 'down' ? 'front' : player.direction);
     if (loadedImages[spriteKey]) {
         ctx.drawImage(loadedImages[spriteKey], player.x, player.y, player.width, player.height);
-    } else {
-        // Görsel yüklenene kadar kırmızı kutu çiz
-        ctx.fillStyle = 'red';
-        ctx.fillRect(player.x, player.y, player.width, player.height);
     }
 
     requestAnimationFrame(() => {
@@ -280,7 +317,6 @@ function draw() {
     });
 }
 
-// Oyunu Başlat
 window.onload = draw;
 </script>
 
