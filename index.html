@@ -6,12 +6,32 @@
     <title>Korku Oyunu - Developer Burak</title>
     <style>
         body, html { 
-            margin: 0; padding: 0; background: #000; overflow: hidden; 
+            margin: 0; padding: 0; background: #111; overflow: hidden; 
             width: 100%; height: 100%; font-family: sans-serif; 
             user-select: none; -webkit-user-select: none; touch-action: none; 
+            display: flex; justify-content: center; align-items: center;
         }
-        #game-container { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; }
-        canvas { display: block; width: 100%; height: 100%; object-fit: cover; }
+        #game-container { 
+            position: relative; 
+            width: 100vw; 
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        canvas { 
+            display: block; 
+            max-width: 100%; 
+            max-height: 100%; 
+            object-fit: contain; /* Çözünürlüğü bozmadan ekrana tam sığdırır */
+            /* Pixel-art görsellerin bulanıklaşmasını önleyen kritik ayar: */
+            image-rendering: -moz-crisp-edges;
+            image-rendering: -webkit-crisp-edges;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+            background: #000;
+            box-shadow: 0 0 20px rgba(0,0,0,0.8);
+        }
         
         #dev-tag { 
             position: absolute; top: 15px; left: 15px; color: #fff; 
@@ -21,7 +41,7 @@
         
         #door-btn { 
             position: absolute; bottom: 30px; right: 30px; width: 85px; height: 85px; 
-            background: rgba(0, 0, 0, 0.7); border: 3px solid #fff; border-radius: 50%; 
+            background: rgba(0, 0, 0, 0.8); border: 3px solid #fff; border-radius: 50%; 
             color: white; display: none; justify-content: center; align-items: center; 
             cursor: pointer; font-weight: bold; z-index: 10;
             box-shadow: 0 0 20px rgba(255, 255, 255, 0.5); font-size: 18px;
@@ -37,7 +57,7 @@
             width: 60px; height: 60px; background: rgba(255, 255, 255, 0.5);
             border-radius: 50%; position: absolute; pointer-events: none; 
         }
-        /* Bilgisayarda joystick'i gizle */
+        /* Dokunmatik ekran yoksa (PC ise) joystick'i gizle */
         @media (pointer: fine) { #joystick-area { display: none; } }
     </style>
 </head>
@@ -55,24 +75,19 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const doorBtn = document.getElementById('door-btn');
 
-// Dahili çözünürlük sabittir, CSS ile ekrana sığdırılır. Bu çarpışma koordinatlarını kolaylaştırır.
+// Oyunun ana iç çözünürlüğü (En-boy oranı bozulmaz)
 const GAME_WIDTH = 1000;
 const GAME_HEIGHT = 750;
-
-function resizeCanvas() {
-    canvas.width = GAME_WIDTH;
-    canvas.height = GAME_HEIGHT;
-}
-window.addEventListener('resize', resizeCanvas);
-resizeCanvas();
+canvas.width = GAME_WIDTH;
+canvas.height = GAME_HEIGHT;
 
 // Oyun Durumu
 let currentMap = 'outside'; 
 let player = {
-    x: GAME_WIDTH / 2 - 20, // Başlangıç pozisyonu
+    x: GAME_WIDTH / 2 - 20, 
     y: GAME_HEIGHT / 2 + 100,
     speed: 5,
-    width: 40, height: 40, // Küçültülmüş boyut
+    width: 45, height: 45, 
     direction: 'down',
     isMoving: false
 };
@@ -98,41 +113,29 @@ function preload() {
 }
 preload();
 
-// --- FİZİK VE ÇARPIŞMA (COLLISION) ---
-
-// İki dikdörtgenin çarpışıp çarpışmadığını kontrol eder
+// --- FİZİK VE ÇARPIŞMA ---
 function rectIntersect(r1, r2) {
-    return !(r2.x > r1.x + r1.width || 
-             r2.x + r2.width < r1.x || 
-             r2.y > r1.y + r1.height || 
-             r2.y + r2.height < r1.y);
+    return !(r2.x > r1.x + r1.width || r2.x + r2.width < r1.x || r2.y > r1.y + r1.height || r2.y + r2.height < r1.y);
 }
 
-// Haritalardaki engelleri tanımla (x, y, width, height)
-// Bu koordinatlar sabittir (1000x750 çözünürlüğe göre).
 const obstacles = {
     outside: [
-        // Ev (Ortadaki büyük bina, kapıyı boş bıraktım)
-        { x: 380, y: 150, width: 240, height: 250 }, // Evin ana gövdesi
-        
-        // Taşlar ve Çevre Engelleri (Resimdeki yerlerine göre tahmini)
-        { x: 50,  y: 500, width: 150, height: 150 }, // Sol alttaki büyük taş
-        { x: 150, y: 100, width: 120, height: 120 }, // Sol üstteki taş
-        { x: 800, y: 150, width: 100, height: 100 }, // Sağ üstteki taş
-        { x: 750, y: 450, width: 180, height: 180 }, // Sağ ortadaki taş/çalı grubu
+        { x: 380, y: 150, width: 240, height: 250 }, // Ev
+        { x: 50,  y: 500, width: 150, height: 150 }, // Sol alt taş
+        { x: 150, y: 100, width: 120, height: 120 }, // Sol üst taş
+        { x: 800, y: 150, width: 100, height: 100 }, // Sağ üst taş
+        { x: 750, y: 450, width: 180, height: 180 }, // Sağ orta taş
         { x: 0,   y: 0,   width: 1000, height: 50  }, // Üst sınır
         { x: 0,   y: 700, width: 1000, height: 50  }  // Alt sınır
     ],
     inside: [
-        // Hallway duvarları (Sadece ortadaki koridor yürünebilir)
         { x: 0,   y: 0,   width: 350,  height: 750 }, // Sol duvar
         { x: 650, y: 0,   width: 350,  height: 750 }, // Sağ duvar
-        { x: 350, y: 0,   width: 300,  height: 100 }  // Koridorun sonundaki duvar
+        { x: 350, y: 0,   width: 300,  height: 100 }  // Üst duvar
     ]
 };
 
-// --- KONTROLLER ---
-// Bilgisayar (WASD)
+// --- KLAVYE KONTROLLERİ ---
 const keys = { w:false, a:false, s:false, d:false, ArrowUp:false, ArrowDown:false, ArrowLeft:false, ArrowRight:false };
 window.addEventListener('keydown', e => { if(keys.hasOwnProperty(e.key)){ keys[e.key]=true; updateKeyboardMove(); }});
 window.addEventListener('keyup', e => { if(keys.hasOwnProperty(e.key)){ keys[e.key]=false; updateKeyboardMove(); }});
@@ -150,7 +153,7 @@ function updateKeyboardMove() {
     } else { player.isMoving = false; moveVector={x:0,y:0}; }
 }
 
-// Mobil (Joystick)
+// --- JOYSTICK KONTROLLERİ ---
 const joyArea = document.getElementById('joystick-area');
 const joyStick = document.getElementById('joystick-stick');
 let isJoystickDragging = false;
@@ -174,64 +177,49 @@ function drag(e) {
 }
 function endDrag() { isJoystickDragging = false; joyStick.style.transform = `translate(0px, 0px)`; moveVector={x:0,y:0}; player.isMoving = false; updateKeyboardMove(); }
 
-// --- HARİTA GEÇİŞİ VE KAPI MANTIĞI ---
+// --- HARİTA GEÇİŞİ ---
 function toggleMap() {
     if (currentMap === 'outside') {
         currentMap = 'inside';
-        // İçeri girince kapının biraz ilerisinde doğ (bug'ı önler)
         player.x = GAME_WIDTH / 2 - player.width / 2; 
-        player.y = GAME_HEIGHT - 200; // Kapıdan uzakta
+        player.y = GAME_HEIGHT - 200; // İçeri girince kapı butonundan uzakta doğsun
         player.direction = 'up';
     } else {
         currentMap = 'outside';
-        // Dışarı çıkınca kapı önünde ama engelin dışında doğ
         player.x = GAME_WIDTH / 2 - player.width / 2; 
-        player.y = 420; // Evin engel alanının hemen altı
+        player.y = 420; // Dışarı çıkınca evin alt sınırında doğsun
         player.direction = 'down';
     }
     doorBtn.style.display = 'none'; 
 }
 
-// --- ANA DÖNGÜ ---
 function update() {
     if (player.isMoving) {
-        // Çarpışma kontrollü hareket
         let nextX = player.x + moveVector.x * player.speed;
         let nextY = player.y + moveVector.y * player.speed;
         
-        let collisionX = false;
-        let collisionY = false;
+        let collisionX = false, collisionY = false;
 
-        // Ekran sınırları kontrolü
         if (nextX < 0 || nextX > GAME_WIDTH - player.width) collisionX = true;
         if (nextY < 0 || nextY > GAME_HEIGHT - player.height) collisionY = true;
 
-        // Engel kontrolü
         let currentObstacles = obstacles[currentMap];
-        let playerRect = { x: nextX, y: player.y, width: player.width, height: player.height }; // Sadece X değişimi
-
-        // X ekseni kontrolü
-        for (let obs of currentObstacles) {
-            if (rectIntersect(playerRect, obs)) { collisionX = true; break; }
-        }
+        
+        let playerRect = { x: nextX, y: player.y, width: player.width, height: player.height };
+        for (let obs of currentObstacles) { if (rectIntersect(playerRect, obs)) { collisionX = true; break; } }
         if (!collisionX) player.x = nextX;
 
-        // Y ekseni kontrolü (Sürme hissi için ayrı kontrol)
-        playerRect = { x: player.x, y: nextY, width: player.width, height: player.height }; // Güncellenmiş X ile Y değişimi
-        for (let obs of currentObstacles) {
-            if (rectIntersect(playerRect, obs)) { collisionY = true; break; }
-        }
+        playerRect = { x: player.x, y: nextY, width: player.width, height: player.height };
+        for (let obs of currentObstacles) { if (rectIntersect(playerRect, obs)) { collisionY = true; break; } }
         if (!collisionY) player.y = nextY;
     }
 
     // Kapı Butonu Mantığı
     let nearDoor = false;
     if (currentMap === 'outside') {
-        // Dışarıda evin kapısına yaklaşıldığında (x ortada, y yukarıda)
         if (player.x > 450 && player.x < 550 && player.y > 380 && player.y < 420) nearDoor = true;
     } else {
-        // İçeride kapıya (aşağıya) iyice yaklaşıldığında
-        if (player.y > GAME_HEIGHT - 80) nearDoor = true; // Sadece kapıya gitmediğimizde çıkmaz
+        if (player.y > GAME_HEIGHT - 80) nearDoor = true; 
     }
     doorBtn.style.display = nearDoor ? 'flex' : 'none';
 }
@@ -239,16 +227,10 @@ function update() {
 function draw() {
     ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
     
-    // Harita
+    // Haritayı Çiz
     if (loadedImages[currentMap]) ctx.drawImage(loadedImages[currentMap], 0, 0, GAME_WIDTH, GAME_HEIGHT);
 
-    // Engelleri Çiz (Hata ayıklama için, oyun bitince yorum satırı yapabilirsin)
-    /*
-    ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
-    for (let obs of obstacles[currentMap]) ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
-    */
-
-    // Karakter
+    // Karakteri Çiz
     let spriteKey = (player.isMoving ? 'walk_' : 'stand_') + (player.direction==='up'?'back':player.direction==='down'?'front':player.direction);
     if (loadedImages[spriteKey]) ctx.drawImage(loadedImages[spriteKey], player.x, player.y, player.width, player.height);
 
