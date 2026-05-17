@@ -3,63 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Korku Oyunu - Developer Burak</title>
+    <title>Korku Oyunu</title>
     <style>
         body, html { 
-            margin: 0; padding: 0; background: #0a0a0a; overflow: hidden; 
-            width: 100%; height: 100%; font-family: sans-serif; 
-            user-select: none; -webkit-user-select: none; touch-action: none; 
-            display: flex; justify-content: center; align-items: center;
+            margin: 0; 
+            padding: 0; 
+            background: #000; 
+            overflow: hidden; 
+            width: 100%; 
+            height: 100%; 
+            font-family: sans-serif; 
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: none; 
         }
         #game-container { 
-            position: relative; 
-            /* Bilgisayar ekranına en boy oranını koruyarak tam sığdırma sihirbazı */
-            width: 100vw;
-            height: 100vh;
-            max-width: calc(100vh * 1.333); /* 4:3 oranını korur */
-            max-height: calc(100vw * 0.75);
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            position: absolute; 
+            top: 0; left: 0; 
+            width: 100vw; 
+            height: 100vh; 
         }
         canvas { 
             display: block; 
             width: 100%; 
             height: 100%; 
-            /* Pixel-art netliğini koruma kodları */
-            image-rendering: -moz-crisp-edges;
-            image-rendering: -webkit-crisp-edges;
-            image-rendering: pixelated;
-            image-rendering: crisp-edges;
-            background: #000;
+            object-fit: cover; /* Bilgisayarda da ekrana tam sığdırır */
         }
         
         #dev-tag { 
-            position: absolute; top: 15px; left: 15px; color: #fff; 
-            background: rgba(0,0,0,0.6); padding: 5px 10px; border-radius: 5px; 
-            font-size: 14px; border: 1px solid #1abc9c; z-index: 10;
+            position: absolute; 
+            top: 15px; 
+            left: 15px; 
+            color: #fff; 
+            background: rgba(0,0,0,0.6); 
+            padding: 5px 10px; 
+            border-radius: 5px; 
+            font-size: 14px; 
+            border: 1px solid #1abc9c; 
+            z-index: 10;
         }
         
         #door-btn { 
-            position: absolute; bottom: 5%; right: 5%; width: 75px; height: 75px; 
-            background: rgba(0, 0, 0, 0.8); border: 3px solid #fff; border-radius: 50%; 
-            color: white; display: none; justify-content: center; align-items: center; 
-            cursor: pointer; font-weight: bold; z-index: 10;
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.5); font-size: 16px;
+            position: absolute; 
+            bottom: 20px; 
+            right: 20px; 
+            width: 80px; 
+            height: 80px; 
+            background: rgba(0, 0, 0, 0.7); 
+            border: 2px solid #fff; 
+            border-radius: 50%; 
+            color: white; 
+            display: none; 
+            justify-content: center; 
+            align-items: center; 
+            cursor: pointer; 
+            font-weight: bold; 
+            z-index: 10;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
         }
 
         #joystick-area {
-            position: absolute; bottom: 5%; left: 5%; width: 120px; height: 120px;
-            background: rgba(255, 255, 255, 0.05); border-radius: 50%;
-            border: 2px solid rgba(255, 255, 255, 0.2); z-index: 10;
-            display: flex; justify-content: center; align-items: center;
+            position: absolute;
+            bottom: 30px;
+            left: 30px;
+            width: 120px;
+            height: 120px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            z-index: 10;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
         #joystick-stick {
-            width: 50px; height: 50px; background: rgba(255, 255, 255, 0.5);
-            border-radius: 50%; position: absolute; pointer-events: none; 
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            position: absolute;
+            pointer-events: none; 
         }
-        /* Fare kullanan cihazlarda (PC) joystick alanını tamamen gizle */
-        @media (pointer: fine) { #joystick-area { display: none; } }
     </style>
 </head>
 <body>
@@ -67,7 +91,11 @@
 <div id="game-container">
     <div id="dev-tag">Developer Burak</div>
     <canvas id="gameCanvas"></canvas>
-    <div id="joystick-area"><div id="joystick-stick"></div></div>
+    
+    <div id="joystick-area">
+        <div id="joystick-stick"></div>
+    </div>
+
     <div id="door-btn" onclick="toggleMap()">KAPI</div>
 </div>
 
@@ -75,120 +103,170 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const doorBtn = document.getElementById('door-btn');
+const joyArea = document.getElementById('joystick-area');
+const joyStick = document.getElementById('joystick-stick');
 
-// İç çözünürlüğü sabit tutuyoruz ki engeller kaymasın, CSS bunu ekrana esnetmeden sığdıracak
-const GAME_WIDTH = 1000;
-const GAME_HEIGHT = 750;
-canvas.width = GAME_WIDTH;
-canvas.height = GAME_HEIGHT;
+// Bilgisayar / Mobil Algılama (Bilgisayarsa joystick'i gizle)
+const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+if (!isTouchDevice) {
+    joyArea.style.display = 'none';
+}
+
+function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
 
 // Oyun Durumu
 let currentMap = 'outside'; 
 let player = {
-    x: GAME_WIDTH / 2 - 20, 
-    y: GAME_HEIGHT / 2 + 120,
-    speed: 5,
-    width: 45, height: 45, 
+    x: canvas.width / 2 - 25, 
+    y: canvas.height / 2 + 50,
+    speed: 4,
+    width: 50, height: 50, // Karakter boyutu küçültüldü
     direction: 'down',
     isMoving: false
 };
+
 let moveVector = { x: 0, y: 0 };
 
-// --- GÖRSELLER ---
 const images = {
     maps: {
         outside: 'https://i.ibb.co/9kYVv8HF/MG-20260513-WA0001.jpg',
         inside: 'https://i.ibb.co/jZLz5d4X/MG-20260513-WA0000.jpg'
     },
     sprites: {
-        stand_back: 'https://i.ibb.co/YBmnvKR0/1778341855649-1.jpg', stand_front: 'https://i.ibb.co/HDfvc589/1778341855649-2.jpg',
-        stand_right: 'https://i.ibb.co/bRFJ8XkZ/1778341855649-3.jpg', stand_left: 'https://i.ibb.co/NgVq4cQB/1778341855649-4.jpg',
-        walk_back: 'https://i.ibb.co/pBV1FvL2/1778341855649-5.jpg', walk_front: 'https://i.ibb.co/ZRzhXFr8/1778341855649-6.jpg',
-        walk_right: 'https://i.ibb.co/nq0LFGgd/1778341855649-7.jpg', walk_left: 'https://i.ibb.co/3ZwvfRY/1778341855649-8.jpg'
+        stand_back: 'https://i.ibb.co/YBmnvKR0/1778341855649-1.jpg',
+        stand_front: 'https://i.ibb.co/HDfvc589/1778341855649-2.jpg',
+        stand_right: 'https://i.ibb.co/bRFJ8XkZ/1778341855649-3.jpg',
+        stand_left: 'https://i.ibb.co/NgVq4cQB/1778341855649-4.jpg',
+        walk_back: 'https://i.ibb.co/pBV1FvL2/1778341855649-5.jpg',
+        walk_front: 'https://i.ibb.co/ZRzhXFr8/1778341855649-6.jpg',
+        walk_right: 'https://i.ibb.co/nq0LFGgd/1778341855649-7.jpg',
+        walk_left: 'https://i.ibb.co/3ZwvfRY/1778341855649-8.jpg'
     }
 };
+
 const loadedImages = {};
 function preload() {
-    for (let key in images.maps) { let img = new Image(); img.src = images.maps[key]; loadedImages[key] = img; }
-    for (let key in images.sprites) { let img = new Image(); img.src = images.sprites[key]; loadedImages[key] = img; }
+    for (let key in images.maps) {
+        let img = new Image(); img.src = images.maps[key]; loadedImages[key] = img;
+    }
+    for (let key in images.sprites) {
+        let img = new Image(); img.src = images.sprites[key]; loadedImages[key] = img;
+    }
 }
 preload();
 
-// --- FİZİK VE ENGEL SİSTEMİ ---
-function rectIntersect(r1, r2) {
-    return !(r2.x > r1.x + r1.width || r2.x + r2.width < r1.x || r2.y > r1.y + r1.height || r2.y + r2.height < r1.y);
-}
+// --- KLAVYE (WASD) KONTROLLERİ ---
+const keys = { w: false, a: false, s: false, d: false, ArrowUp: false, ArrowDown: false, ArrowLeft: false, ArrowRight: false };
 
-const obstacles = {
-    outside: [
-        { x: 380, y: 150, width: 240, height: 240 }, // Ev engeli
-        { x: 50,  y: 500, width: 150, height: 150 }, // Sol alt büyük taş
-        { x: 150, y: 100, width: 120, height: 120 }, // Sol üst taş
-        { x: 800, y: 150, width: 100, height: 100 }, // Sağ üst taş
-        { x: 750, y: 450, width: 180, height: 180 }, // Sağ orta taşlar
-        { x: 0,   y: 0,   width: 1000, height: 60  }, // Üst harita sınırı
-        { x: 0,   y: 710, width: 1000, height: 40  }  // Alt harita sınırı
-    ],
-    inside: [
-        { x: 0,   y: 0,   width: 360,  height: 750 }, // Sol duvarlar
-        { x: 640, y: 0,   width: 360,  height: 750 }, // Sağ duvarlar
-        { x: 360, y: 0,   width: 280,  height: 120 }  // Koridor sonu tepe duvarı
-    ]
-};
+window.addEventListener('keydown', (e) => {
+    if (keys.hasOwnProperty(e.key)) {
+        keys[e.key] = true;
+        updateKeyboardMove();
+    }
+});
 
-// --- KLAVYE KONTROLLERİ (WASD + OKLAR) ---
-const keys = { w:false, a:false, s:false, d:false, ArrowUp:false, ArrowDown:false, ArrowLeft:false, ArrowRight:false };
-window.addEventListener('keydown', e => { if(keys.hasOwnProperty(e.key)){ keys[e.key]=true; updateKeyboardMove(); }});
-window.addEventListener('keyup', e => { if(keys.hasOwnProperty(e.key)){ keys[e.key]=false; updateKeyboardMove(); }});
+window.addEventListener('keyup', (e) => {
+    if (keys.hasOwnProperty(e.key)) {
+        keys[e.key] = false;
+        updateKeyboardMove();
+    }
+});
 
 function updateKeyboardMove() {
-    if (isJoystickDragging) return;
+    if (isDragging) return; // Joystick kullanılıyorsa klavyeyi ezme
+    
     let dx = 0, dy = 0;
-    if (keys.w || keys.ArrowUp) dy = -1; if (keys.s || keys.ArrowDown) dy = 1;
-    if (keys.a || keys.ArrowLeft) dx = -1; if (keys.d || keys.ArrowRight) dx = 1;
-    if (dx!==0 || dy!==0) {
+    if (keys.w || keys.ArrowUp) dy = -1;
+    if (keys.s || keys.ArrowDown) dy = 1;
+    if (keys.a || keys.ArrowLeft) dx = -1;
+    if (keys.d || keys.ArrowRight) dx = 1;
+    
+    if (dx !== 0 || dy !== 0) {
         player.isMoving = true;
-        let len = Math.hypot(dx, dy); moveVector.x = dx/len; moveVector.y = dy/len;
-        if (Math.abs(dx) > Math.abs(dy)) player.direction = dx>0 ? 'right' : 'left';
-        else player.direction = dy>0 ? 'down' : 'up';
-    } else { player.isMoving = false; moveVector={x:0,y:0}; }
+        // Çapraz gidişlerde hızı dengele
+        let length = Math.hypot(dx, dy);
+        moveVector.x = dx / length;
+        moveVector.y = dy / length;
+        
+        if (Math.abs(dx) > Math.abs(dy)) {
+            player.direction = dx > 0 ? 'right' : 'left';
+        } else {
+            player.direction = dy > 0 ? 'down' : 'up';
+        }
+    } else {
+        player.isMoving = false;
+        moveVector.x = 0;
+        moveVector.y = 0;
+    }
 }
 
-// --- MOBİL JOYSTICK SİSTEMİ ---
-const joyArea = document.getElementById('joystick-area');
-const joyStick = document.getElementById('joystick-stick');
-let isJoystickDragging = false;
+// --- JOYSTICK KONTROLLERİ ---
+let isDragging = false;
 let joyCenter = { x: 0, y: 0 };
 
 joyArea.addEventListener('touchstart', startDrag, {passive: false});
 joyArea.addEventListener('touchmove', drag, {passive: false});
 window.addEventListener('touchend', endDrag);
 
-function startDrag(e) { e.preventDefault(); isJoystickDragging = true; let r = joyArea.getBoundingClientRect(); joyCenter = { x: r.left + r.width/2, y: r.top + r.height/2 }; drag(e); }
-function drag(e) {
-    if (!isJoystickDragging) return; e.preventDefault();
-    let t = e.touches[0]; let dx = t.clientX - joyCenter.x; let dy = t.clientY - joyCenter.y;
-    let dist = Math.hypot(dx, dy); let maxDist = joyArea.clientWidth / 2;
-    if (dist > maxDist) { dx *= maxDist/dist; dy *= maxDist/dist; dist = maxDist; }
-    joyStick.style.transform = `translate(${dx}px, ${dy}px)`;
-    moveVector.x = dx / maxDist; moveVector.y = dy / maxDist;
-    player.isMoving = true;
-    if (Math.abs(dx) > Math.abs(dy)) player.direction = dx>0 ? 'right' : 'left';
-    else player.direction = dy>0 ? 'down' : 'up';
+function startDrag(e) {
+    e.preventDefault();
+    isDragging = true;
+    let rect = joyArea.getBoundingClientRect();
+    joyCenter = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+    drag(e);
 }
-function endDrag() { isJoystickDragging = false; joyStick.style.transform = `translate(0px, 0px)`; moveVector={x:0,y:0}; player.isMoving = false; updateKeyboardMove(); }
 
-// --- MAP GEÇİŞ SİHRİ ---
+function drag(e) {
+    if (!isDragging) return;
+    e.preventDefault();
+    let touch = e.touches[0];
+    let dx = touch.clientX - joyCenter.x;
+    let dy = touch.clientY - joyCenter.y;
+    let distance = Math.hypot(dx, dy);
+    let maxDist = joyArea.clientWidth / 2;
+
+    if (distance > maxDist) {
+        dx = (dx / distance) * maxDist;
+        dy = (dy / distance) * maxDist;
+    }
+
+    joyStick.style.transform = `translate(${dx}px, ${dy}px)`;
+
+    moveVector.x = dx / maxDist;
+    moveVector.y = dy / maxDist;
+    player.isMoving = true;
+    
+    if (Math.abs(dx) > Math.abs(dy)) {
+        player.direction = dx > 0 ? 'right' : 'left';
+    } else {
+        player.direction = dy > 0 ? 'down' : 'up';
+    }
+}
+
+function endDrag() {
+    isDragging = false;
+    joyStick.style.transform = `translate(0px, 0px)`;
+    moveVector = { x: 0, y: 0 };
+    player.isMoving = false;
+    updateKeyboardMove(); // Bırakıldığında klavyede basılı tuş varsa ona dön
+}
+
+// --- HARİTA VE KAPI İŞLEMLERİ ---
 function toggleMap() {
     if (currentMap === 'outside') {
         currentMap = 'inside';
-        player.x = GAME_WIDTH / 2 - player.width / 2; 
-        player.y = GAME_HEIGHT - 180; // İçeri girdiğinde kapı butonunun tetiklenmeyeceği güvenli bölge
+        player.x = canvas.width / 2 - player.width / 2; 
+        player.y = canvas.height - 150; // İçeri girince kapı butonundan yeterince uzakta doğ
         player.direction = 'up';
     } else {
         currentMap = 'outside';
-        player.x = GAME_WIDTH / 2 - player.width / 2; 
-        player.y = 410; // Dışarı çıkınca evin engeline takılmayacak şekilde doğma
+        player.x = canvas.width / 2 - player.width / 2; 
+        player.y = canvas.height / 2 + 60; // Dışarı çıkınca kapı butonundan uzakta doğ
         player.direction = 'down';
     }
     doorBtn.style.display = 'none'; 
@@ -196,48 +274,47 @@ function toggleMap() {
 
 function update() {
     if (player.isMoving) {
-        let nextX = player.x + moveVector.x * player.speed;
-        let nextY = player.y + moveVector.y * player.speed;
+        player.x += moveVector.x * player.speed;
+        player.y += moveVector.y * player.speed;
         
-        let collisionX = false, collisionY = false;
-
-        if (nextX < 0 || nextX > GAME_WIDTH - player.width) collisionX = true;
-        if (nextY < 0 || nextY > GAME_HEIGHT - player.height) collisionY = true;
-
-        let currentObstacles = obstacles[currentMap];
-        
-        let playerRect = { x: nextX, y: player.y, width: player.width, height: player.height };
-        for (let obs of currentObstacles) { if (rectIntersect(playerRect, obs)) { collisionX = true; break; } }
-        if (!collisionX) player.x = nextX;
-
-        playerRect = { x: player.x, y: nextY, width: player.width, height: player.height };
-        for (let obs of currentObstacles) { if (rectIntersect(playerRect, obs)) { collisionY = true; break; } }
-        if (!collisionY) player.y = nextY;
+        player.x = Math.max(0, Math.min(player.x, canvas.width - player.width));
+        player.y = Math.max(0, Math.min(player.y, canvas.height - player.height));
     }
 
-    // Gelişmiş Kapı Yaklaşım Kontrolü
+    // Kapı Kontrolü
     let nearDoor = false;
+    
     if (currentMap === 'outside') {
-        // Dışarıda evin kapısına tam milimetrik yaklaştığında buton açılır
-        if (player.x > 450 && player.x < 550 && player.y > 380 && player.y < 410) nearDoor = true;
-    } else {
-        // İçeride sadece en alt sınıra (kapı çıkışına) kadar yürüdüğünde açılır
-        if (player.y > GAME_HEIGHT - 70) nearDoor = true; 
+        // Evin kapısı haritanın yaklaşık orta-üst tarafında
+        if (player.x > canvas.width/2 - 70 && player.x < canvas.width/2 + 70 && player.y < canvas.height/2 - 10) {
+            nearDoor = true;
+        }
+    } else if (currentMap === 'inside') {
+        // İçerideki kapı (Ekranın en altı)
+        if (player.y > canvas.height - 80) { // Sadece iyice aşağı inince buton çıkar
+            nearDoor = true;
+        }
     }
+    
     doorBtn.style.display = nearDoor ? 'flex' : 'none';
 }
 
 function draw() {
-    ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    // Haritayı çiz
-    if (loadedImages[currentMap]) ctx.drawImage(loadedImages[currentMap], 0, 0, GAME_WIDTH, GAME_HEIGHT);
+    if (loadedImages[currentMap]) {
+        ctx.drawImage(loadedImages[currentMap], 0, 0, canvas.width, canvas.height);
+    }
 
-    // Karakteri çiz
-    let spriteKey = (player.isMoving ? 'walk_' : 'stand_') + (player.direction==='up'?'back':player.direction==='down'?'front':player.direction);
-    if (loadedImages[spriteKey]) ctx.drawImage(loadedImages[spriteKey], player.x, player.y, player.width, player.height);
+    let spriteKey = (player.isMoving ? 'walk_' : 'stand_') + (player.direction === 'up' ? 'back' : player.direction === 'down' ? 'front' : player.direction);
+    if (loadedImages[spriteKey]) {
+        ctx.drawImage(loadedImages[spriteKey], player.x, player.y, player.width, player.height);
+    }
 
-    requestAnimationFrame(() => { update(); draw(); });
+    requestAnimationFrame(() => {
+        update();
+        draw();
+    });
 }
 
 window.onload = draw;
