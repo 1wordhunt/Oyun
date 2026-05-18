@@ -2,177 +2,349 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BURAK STUDIO: BILLION DOLLAR EMPIRE</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, orientation=landscape">
+    <title>BURAK STUDIO: MULTI-GENDER ARENA</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@600;700&display=swap');
         
         * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-user-select: none; }
-        body, html { width: 100%; height: 100%; overflow: hidden; background: #0b0c10; font-family: 'Rajdhani', sans-serif; color: #fff; }
+        body, html { width: 100%; height: 100%; overflow: hidden; background: #05050a; font-family: 'Rajdhani', sans-serif; }
         
-        #app-container {
-            position: relative; width: 100%; height: 100%; max-width: 450px; margin: 0 auto;
-            background: #1f2833; overflow-y: auto; border: 3px solid #45f3ff; display: flex; flex-direction: column;
-        }
-
-        /* Milyon Dolarlık Şirket HUD Katmanı */
-        .header-panel {
-            background: #0b0c10; padding: 20px; border-bottom: 2px solid #45f3ff;
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        .dev-title { font-family: 'Orbitron', sans-serif; font-size: 16px; color: #45f3ff; font-weight: 900; }
-        .currency-box { display: flex; gap: 10px; font-family: 'Orbitron', sans-serif; font-size: 14px; }
-        .gem { color: #ff0055; text-shadow: 0 0 10px #ff0055; }
-        .gold { color: #ffd700; text-shadow: 0 0 10px #ffd700; }
-
-        /* Ana Menü Alanları */
-        .content-section { padding: 20px; flex: 1; }
-        .rank-badge {
-            background: rgba(0,0,0,0.4); padding: 15px; border-radius: 8px; text-align: center;
-            margin-bottom: 20px; border: 1px solid rgba(69, 243, 255, 0.2);
+        #game-wrapper {
+            position: relative; width: 100%; height: 100%;
+            background: #000; overflow: hidden;
         }
         
-        /* Büyük Oyunlardaki Pazarlama (Shop) Kartları */
-        .shop-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
-        .shop-card {
-            background: #112233; border: 2px solid #1f2833; border-radius: 8px; padding: 15px;
-            text-align: center; display: flex; flex-direction: column; justify-content: space-between;
-            align-items: center; transition: all 0.2s;
+        canvas { display: block; width: 100%; height: 100%; }
+        
+        /* Global HUD */
+        .hud {
+            position: absolute; top: 15px; left: 15px; right: 15px;
+            pointer-events: none; z-index: 10; display: flex; justify-content: space-between;
         }
-        .shop-card:active { transform: scale(0.95); border-color: #45f3ff; }
-        .card-name { font-family: 'Orbitron', sans-serif; font-size: 14px; margin-bottom: 5px; }
-        .card-price { font-size: 16px; font-weight: bold; margin-top: 10px; }
+        .profile-card { background: rgba(0,0,0,0.6); padding: 10px 20px; border-radius: 20px; border: 2px solid #00f2fe; }
+        .dev-tag { font-family: 'Orbitron', sans-serif; font-size: 14px; color: #00f2fe; font-weight: 900; text-shadow: 0 0 10px #00f2fe; }
+        .crystal-score { font-family: 'Orbitron', sans-serif; font-size: 20px; color: #f0f; text-shadow: 0 0 10px #f0f; }
 
-        /* Premium Battle Pass Çizgisi */
-        .pass-container {
-            background: linear-gradient(135deg, #6600cc, #330066); padding: 15px;
-            border-radius: 8px; margin-top: 25px; border: 2px solid #ffd700;
-        }
+        /* Mobil Kontroller */
+        .controls { position: absolute; bottom: 20px; width: 100%; padding: 0 30px; display: flex; justify-content: space-between; z-index: 10; pointer-events: none; }
+        .joy-boundary { width: 110px; height: 110px; background: rgba(255,255,255,0.05); border: 2px dashed rgba(0,242,254,0.4); border-radius: 50%; display: flex; justify-content: center; align-items: center; pointer-events: auto; }
+        .joy-stick { width: 45px; height: 45px; background: #00f2fe; border-radius: 50%; box-shadow: 0 0 15px #00f2fe; }
+        
+        .action-zone { display: flex; gap: 15px; pointer-events: auto; }
+        .atk-btn { width: 70px; height: 70px; border-radius: 50%; border: 3px solid #fff; color: #fff; font-family: 'Orbitron', sans-serif; font-size: 12px; font-weight: bold; display: flex; justify-content: center; align-items: center; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+        #btn-shoot { background: linear-gradient(135deg, #ff0055, #990033); border-color: #ff0055; box-shadow: 0 0 15px #ff0055; }
 
-        .action-btn {
-            width: 100%; background: linear-gradient(90deg, #00f2fe, #45f3ff);
-            border: none; color: #000; padding: 14px; font-family: 'Orbitron', sans-serif;
-            font-weight: 900; border-radius: 5px; cursor: pointer; margin-top: 15px;
-            box-shadow: 0 4px 15px rgba(69,243,255,0.4); text-transform: uppercase;
-        }
+        /* Ekranlar */
+        .screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(5, 5, 15, 0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 20; text-align: center; color: #fff; }
+        .hidden { display: none !important; }
+        .start-btn { background: linear-gradient(90deg, #00f2fe, #f0f); color: #fff; border: none; padding: 14px 40px; font-family: 'Orbitron', sans-serif; font-weight: bold; font-size: 16px; border-radius: 30px; cursor: pointer; box-shadow: 0 0 20px #f0f; margin-top: 25px; text-transform: uppercase; }
     </style>
 </head>
 <body>
 
-<div id="app-container">
-    <div class="header-panel">
-        <div>
-            <span class="dev-title">BURAK STUDIO</span><br>
-            <span style="font-size: 11px; color: #66788f;">PROJECT: CAPITAL ENGINE v1.0</span>
+<div id="game-wrapper">
+    <div class="hud">
+        <div class="profile-card">
+            <span class="dev-tag">BURAK [DEVELOPER]</span><br>
+            <span style="color: #aaa; font-size: 11px;">Rütbe: </span><span id="rank-hud" style="color: #cd7f32; font-weight: bold;">Çaylak Bronz</span>
         </div>
-        <div class="currency-box">
-            <span class="gem" id="gem-count">💎 500</span>
-            <span class="gold" id="gold-count">🪙 1000</span>
+        <div class="profile-card" style="border-color: #f0f;">
+            <span class="crystal-score" id="score-hud">💎 CRYSTA: 0</span>
         </div>
     </div>
 
-    <div class="content-section">
-        <div class="rank-badge">
-            <span style="font-size: 12px; color: #66788f; letter-spacing: 1px;">KULLANICI RÜTBESİ</span>
-            <h2 id="rank-display" style="color: #cd7f32; font-family: 'Orbitron', sans-serif; margin-top: 5px;">ÇAYLAK BRONZ</h2>
-            <p id="xp-display" style="font-size: 13px; color: #fff; margin-top: 5px;">0 / 200 XP</p>
+    <div class="controls">
+        <div class="joy-boundary" id="joyBounds">
+            <div class="joy-stick" id="joyStick"></div>
         </div>
-
-        <h3 style="font-family: 'Orbitron', sans-serif; font-size: 16px; color: #45f3ff;">KAZANÇ MERKEZİ</h3>
-        <button class="action-btn" onclick="simulateMatch()">Global Savaş Yap (+75 XP & +250 Altın)</button>
-
-        <h3 style="font-family: 'Orbitron', sans-serif; font-size: 16px; color: #45f3ff; margin-top: 30px;">KARAKTER & SKIN PAZARI</h3>
-        <div class="shop-grid">
-            <div class="shop-card" onclick="buyItem('Obsidia Hero Skin', 150, 'gem')">
-                <div class="card-name" style="color: #ff0055;">OBSIDIA SKIN</div>
-                <div style="font-size: 12px; color: #aaa;">+50 Hasar Gücü</div>
-                <div class="card-price" style="color: #ff0055;">💎 150</div>
-            </div>
-            <div class="shop-card" onclick="buyItem('Karina Assassin Code', 200, 'gem')">
-                <div class="card-name" style="color: #00f2fe;">KARINA HERO</div>
-                <div style="font-size: 12px; color: #aaa;">Özel Suikastçı</div>
-                <div class="card-price" style="color: #00f2fe;">💎 200</div>
-            </div>
-            <div class="shop-card" onclick="buyItem('VIP Battle Crest', 500, 'gold')">
-                <div class="card-name" style="color: #ffd700;">VIP ARMA</div>
-                <div style="font-size: 12px; color: #aaa;">%20 Fazla Altın</div>
-                <div class="card-price" style="color: #ffd700;">🪙 500</div>
-            </div>
-            <div class="shop-card" onclick="buyItem('Legendary Aura', 800, 'gold')">
-                <div class="card-name" style="color: #00ff66;">EFSANE AURA</div>
-                <div style="font-size: 12px; color: #aaa;">Profil Efekti</div>
-                <div class="card-price" style="color: #00ff66;">🪙 800</div>
-            </div>
+        <div class="action-zone">
+            <div class="atk-btn" id="btn-shoot" onclick="playerShoot()">ATEŞ</div>
         </div>
+    </div>
 
-        <div class="pass-container">
-            <span style="font-family: 'Orbitron', sans-serif; font-size: 14px; color: #ffd700; font-weight: 900;">🔥 BRAWL PASS ELITE</span>
-            <p style="font-size: 12px; color: #ddd; margin-top: 5px;">Sezon ödüllerini ve özel elit kırmızı ünvanını açmak için premium geçiş hakkı satın al.</p>
-            <button class="action-btn" style="background: #ffd700; color: #000; font-size: 12px; padding: 8px;" onclick="buyItem('Brawl Pass Elite', 300, 'gem')">PASS AÇ (💎 300)</button>
-        </div>
+    <canvas id="arenaCanvas"></canvas>
+
+    <div id="lobby-screen" class="screen">
+        <h1 style="font-family: 'Orbitron', sans-serif; font-size: 42px; background: linear-gradient(45deg, #00f2fe, #f0f); -webkit-background-clip: text; color: transparent; filter: drop-shadow(0 0 15px #f0f);">GALAXY ARENA</h1>
+        <p style="color: #8c92a0; max-width: 60%; margin-top: 10px; font-size: 15px;">Hem kızların bayılacağı o parıl parıl elmas toplama estetiği, hem de erkeklerin aradığı amansız çatışma mekaniği tek bir arenada birleşti! Yön ver, ateş et ve elmasları topla!</p>
+        <button class="start-btn" onclick="enterArena()">Savaşı Başlat</button>
     </div>
 </div>
 
 <script>
-    let gems = 500;
-    let gold = 1000;
-    let xp = 0;
+    const canvas = document.getElementById('arenaCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    let w, h, state = 'MENU';
+    let score = 0, frame = 0;
+    
+    // Oyuncu Yapısı
+    let player = { x: 300, y: 200, r: 16, speed: 4, hp: 100, maxHp: 100, angle: 0 };
+    let moveVector = { x: 0, y: 0 };
+    
+    let bots = [];
+    let crystals = [];
+    let bullets = [];
+    let particles = [];
 
-    const gemCount = document.getElementById('gem-count');
-    const goldCount = document.getElementById('gold-count');
-    const xpDisplay = document.getElementById('xp-display');
-    const rankDisplay = document.getElementById('rank-display');
-
-    function updateUI() {
-        gemCount.innerText = "💎 " + gems;
-        goldCount.innerText = "🪙 " + gold;
-        xpDisplay.innerText = xp + " / " + getTargetXP() + " XP";
-        calculateRank();
+    function resize() {
+        w = canvas.width = window.innerWidth;
+        h = canvas.height = window.innerHeight;
     }
+    window.addEventListener('resize', resize);
+    window.addEventListener('orientationchange', resize);
+    resize();
 
-    function getTargetXP() {
-        if (xp < 200) return 200;
-        if (xp < 500) return 500;
-        if (xp < 1000) return 1000;
-        return 2000;
-    }
+    // Mobil Joystick Akıllı Sürücüsü
+    const joyBounds = document.getElementById('joyBounds');
+    const joyStick = document.getElementById('joyStick');
 
-    function calculateRank() {
-        let r = "ÇAYLAK BRONZ", c = "#cd7f32";
-        if(xp >= 200 && xp < 500) { r = "DEMİR GRİ"; c = "#aaaaaa"; }
-        else if(xp >= 500 && xp < 1000) { r = "ALTIN SARI"; c = "#ffd700"; }
-        else if(xp >= 1000 && xp < 2000) { r = "ELMAS MAVİ"; c = "#00f2fe"; }
-        else if(xp >= 2000) { r = "ELİT KIRMIZI"; c = "#ff0055"; }
+    joyBounds.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        const rect = joyBounds.getBoundingClientRect();
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+        let tx = e.touches[0].clientX - cx;
+        let ty = e.touches[0].clientY - cy;
+        let dist = Math.hypot(tx, ty);
+        if(dist > 40) { tx = (tx/dist)*40; ty = (ty/dist)*40; }
+        joyStick.style.transform = `translate(${tx}px, ${ty}px)`;
         
-        rankDisplay.innerText = r;
-        rankDisplay.style.color = c;
+        moveVector.x = tx / 40;
+        moveVector.y = ty / 40;
+        player.angle = Math.atan2(ty, tx); // Oyuncunun yüzünü döndüğü yön
+    });
+    
+    joyBounds.addEventListener('touchend', () => {
+        joyStick.style.transform = 'translate(0px, 0px)';
+        moveVector = { x: 0, y: 0 };
+    });
+
+    // Klavye Desteği (PC Testi İçin)
+    window.addEventListener('keydown', (e) => {
+        if(e.key === 'w' || e.key === 'ArrowUp') moveVector.y = -1;
+        if(e.key === 's' || e.key === 'ArrowDown') moveVector.y = 1;
+        if(e.key === 'a' || e.key === 'ArrowLeft') moveVector.x = -1;
+        if(e.key === 'd' || e.key === 'ArrowRight') moveVector.x = 1;
+        if(moveVector.x !== 0 || moveVector.y !== 0) player.angle = Math.atan2(moveVector.y, moveVector.x);
+        if(e.key === ' ' || e.key === 'f') playerShoot();
+    });
+    window.addEventListener('keyup', () => { moveVector = { x: 0, y: 0 }; });
+
+    function spawnWorld() {
+        bots = []; crystals = []; bullets = []; particles = [];
+        // Hem havalı erkek karakterleri hem tatlı kız karakter profillerini simüle eden botlar
+        bots.push({ name: '🌸 Sakura_Girl', x: w - 150, y: 150, r: 15, hp: 80, color: '#f0f', speed: 1.8 });
+        bots.push({ name: '⚡ Alpha_Boy', x: w - 150, y: h - 150, r: 15, hp: 100, color: '#00f2fe', speed: 2 });
+        
+        // İlk elmasları haritaya saçalım
+        for(let i=0; i<6; i++) spawnCrystal();
     }
 
-    function simulateMatch() {
-        xp += 75;
-        gold += 250;
-        alert("⚔️ Savaş kazanıldı! Takımını zafere taşıdın. Hesabına +75 XP ve +250 Oyun içi Altın eklendi!");
-        updateUI();
+    function spawnCrystal() {
+        crystals.push({
+            x: Math.random() * (w - 60) + 30,
+            y: Math.random() * (h - 60) + 30,
+            r: 8, pulse: 0
+        });
     }
 
-    function buyItem(name, price, type) {
-        if (type === 'gem') {
-            if (gems >= price) {
-                gems -= price;
-                alert("🎉 BAŞARILI! '" + name + "' başarıyla satın alındı ve hesabına tanımlandı. Gücün katlandı!");
-            } else {
-                alert("❌ Yetersiz Elmas! Play Store In-App Purchase (Uygulama içi satın alım) sayfasına yönlendiriliyorsunuz... Buradan gerçek parayla paket almanız gerekiyor!");
-            }
-        } else if (type === 'gold') {
-            if (gold >= price) {
-                gold -= price;
-                alert("🎉 BAŞARILI! '" + name + "' altı karşılığında envanterine eklendi.");
-            } else {
-                alert("❌ Yetersiz Altın! Daha fazla maç yapmalı veya elmas bozdurmalısın.");
+    function enterArena() {
+        document.getElementById('lobby-screen').classList.add('hidden');
+        score = 0; player.x = 150; player.y = h/2; player.hp = 100;
+        document.getElementById('score-hud').innerText = "💎 CRYSTA: 0";
+        spawnWorld();
+        state = 'PLAY';
+    }
+
+    function updateRankSystem(pts) {
+        let r = "Çaylak Bronz", c = "#cd7f32";
+        if(pts > 100) { r = "Demir Gri"; c = "#aaaaaa"; }
+        if(pts > 250) { r = "Altın Sarı"; c = "#ffd700"; }
+        if(pts > 500) { r = "Elmas Mavi"; c = "#00f2fe"; }
+        if(pts > 1000) { r = "Elit Kırmızı"; c = "#ff0055"; }
+        const rHud = document.getElementById('rank-hud');
+        rHud.innerText = r; rHud.style.color = c;
+    }
+
+    function playerShoot() {
+        if(state !== 'PLAY' || player.hp <= 0) return;
+        bullets.push({
+            x: player.x, y: player.y,
+            vx: Math.cos(player.angle) * 7,
+            vy: Math.sin(player.angle) * 7,
+            r: 4, color: '#00f2fe', target: 'bot'
+        });
+    }
+
+    function createBurst(x, y, color) {
+        for(let i=0; i<8; i++) {
+            particles.push({
+                x: x, y: y, vx: (Math.random()-0.5)*5, vy: (Math.random()-0.5)*5, alpha: 1, color: color
+            });
+        }
+    }
+
+    // Matematiksel Hesaplama ve Yapay Zeka Katmanı
+    function update() {
+        if (state !== 'PLAY') return;
+        frame++;
+
+        // 1. Oyuncu Pozisyon Güncellemesi
+        player.x += moveVector.x * player.speed;
+        player.y += moveVector.y * player.speed;
+        player.x = Math.max(player.r, Math.min(w - player.r, player.x));
+        player.y = Math.max(player.r, Math.min(h - player.r, player.y));
+
+        // 2. Elmasları Toplama Testi (Kızların bayıldığı estetik döngü)
+        for(let i = crystals.length - 1; i >= 0; i--) {
+            let c = crystals[i];
+            c.pulse += 0.05;
+            let d = Math.hypot(player.x - c.x, player.y - c.y);
+            if(d < player.r + c.r) {
+                score += 25;
+                document.getElementById('score-hud').innerText = "💎 CRYSTA: " + score;
+                updateRankSystem(score);
+                createBurst(c.x, c.y, '#f0f');
+                crystals.splice(i, 1);
+                setTimeout(spawnCrystal, 3000);
             }
         }
-        updateUI();
+
+        // 3. Botların Yapay Zekası (Erkeklerin bayıldığı çatışma döngüsü)
+        bots.forEach(bot => {
+            if(bot.hp <= 0) return;
+            
+            // Bot en yakın elmasa doğru koşar
+            if(crystals.length > 0) {
+                let targetC = crystals[0];
+                let angle = Math.atan2(targetC.y - bot.y, targetC.x - bot.x);
+                bot.x += Math.cos(angle) * bot.speed;
+                bot.y += Math.sin(angle) * bot.speed;
+            }
+
+            // Bot belirli aralıklarla oyuncuya akıllı mermiler sıkar
+            if(Math.random() < 0.01) {
+                let atkAngle = Math.atan2(player.y - bot.y, player.x - bot.x);
+                bullets.push({
+                    x: bot.x, y: bot.y,
+                    vx: Math.cos(atkAngle) * 5, vy: Math.sin(atkAngle) * 5,
+                    r: 4, color: bot.color, target: 'player'
+                });
+            }
+        });
+
+        // 4. Mermilerin Çarpışma Mekaniği
+        for(let i = bullets.length - 1; i >= 0; i--) {
+            let b = bullets[i];
+            b.x += b.vx; b.y += b.vy;
+
+            if(b.x < 0 || b.x > w || b.y < 0 || b.y > h) { bullets.splice(i, 1); continue; }
+
+            if(b.target === 'bot') {
+                for(let j=0; j<bots.length; j++) {
+                    let bot = bots[j];
+                    if(bot.hp > 0 && Math.hypot(bot.x - b.x, bot.y - b.y) < bot.r + b.r) {
+                        bot.hp -= 20;
+                        createBurst(b.x, b.y, '#fff');
+                        bullets.splice(i, 1);
+                        if(bot.hp <= 0) {
+                            score += 100; // Bot avlamak büyük ödül verir
+                            document.getElementById('score-hud').innerText = "💎 CRYSTA: " + score;
+                            updateRankSystem(score);
+                            setTimeout(() => { bot.hp = 100; bot.x = Math.random()*w; bot.y = Math.random()*h; }, 4000);
+                        }
+                        break;
+                    }
+                }
+            } else if(b.target === 'player' && player.hp > 0) {
+                if(Math.hypot(player.x - b.x, player.y - b.y) < player.r + b.r) {
+                    player.hp -= 15;
+                    createBurst(b.x, b.y, '#ff0000');
+                    bullets.splice(i, 1);
+                    if(player.hp <= 0) {
+                        alert("💀 Elendin! Toplam Skorun: " + score + " XP. Yeniden doğuyorsun!");
+                        enterArena();
+                    }
+                }
+            }
+        }
+
+        // Partikülleri eritme
+        for(let i = particles.length - 1; i >= 0; i--) {
+            particles[i].x += particles[i].vx; particles[i].y += particles[i].vy; particles[i].alpha -= 0.04;
+            if(particles[i].alpha <= 0) particles.splice(i, 1);
+        }
     }
+
+    // Sanatsal Grafik Çizim Katmanı
+    function draw() {
+        ctx.fillStyle = '#060713';
+        ctx.fillRect(0, 0, w, h);
+
+        // Siber Kozmik Grid Arka Planı
+        ctx.strokeStyle = 'rgba(0, 242, 254, 0.02)';
+        ctx.lineWidth = 1;
+        for(let i=0; i<w; i+=40) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, h); ctx.stroke(); }
+
+        if (state !== 'PLAY') return;
+
+        // 1. Elmasların Çizilmesi (Neon Efektli Parıltılar)
+        crystals.forEach(c => {
+            let sizeOffset = Math.sin(c.pulse) * 2;
+            ctx.fillStyle = '#f0f';
+            ctx.shadowBlur = 15; ctx.shadowColor = '#f0f';
+            ctx.beginPath();
+            ctx.moveTo(c.x, c.y - c.r - sizeOffset);
+            ctx.lineTo(c.x + c.r + sizeOffset, c.y);
+            ctx.lineTo(c.x, c.y + c.r + sizeOffset);
+            ctx.lineTo(c.x - c.r - sizeOffset, c.y);
+            ctx.fill();
+        });
+        ctx.shadowBlur = 0;
+
+        // 2. Oyuncunun Çizilmesi (Burak - Mavi Savaşçı)
+        if(player.hp > 0) {
+            ctx.fillStyle = '#00f2fe';
+            ctx.beginPath(); ctx.arc(player.x, player.y, player.r, 0, Math.PI*2); ctx.fill();
+            
+            // Oyuncunun baktığı yöne küçük bir siber nişangah çizgisi
+            ctx.strokeStyle = '#fff'; ctx.lineWidth = 3;
+            ctx.beginPath(); ctx.moveTo(player.x, player.y);
+            ctx.lineTo(player.x + Math.cos(player.angle)*22, player.y + Math.sin(player.angle)*22);
+            ctx.stroke();
+
+            // Can Barı
+            ctx.fillStyle = '#00ff66';
+            ctx.fillRect(player.x - 20, player.y - 26, (player.hp/player.maxHp)*40, 5);
+        }
+
+        // 3. Botların Çizilmesi
+        bots.forEach(bot => {
+            if(bot.hp <= 0) return;
+            ctx.fillStyle = bot.color;
+            ctx.beginPath(); ctx.arc(bot.x, bot.y, bot.r, 0, Math.PI*2); ctx.fill();
+            
+            ctx.fillStyle = '#fff'; ctx.font = 'bold 11px Rajdhani'; ctx.textAlign = 'center';
+            ctx.fillText(bot.name, bot.x, bot.y - 32);
+
+            // Bot Can Barı
+            ctx.fillStyle = '#ff0055';
+            ctx.fillRect(bot.x - 15, bot.y - 22, (bot.hp/100)*30, 4);
+        });
+
+        // 4. Mermiler ve Partiküller
+        bullets.forEach(b => { ctx.fillStyle = b.color; ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI*2); ctx.fill(); });
+        particles.forEach(p => { ctx.save(); ctx.globalAlpha = p.alpha; ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, 2, 0, Math.PI*2); ctx.fill(); ctx.restore(); });
+    }
+
+    function loop() {
+        update();
+        draw();
+        requestAnimationFrame(loop);
+    }
+    requestAnimationFrame(loop);
 </script>
 </body>
 </html>
