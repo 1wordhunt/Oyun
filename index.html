@@ -3,342 +3,287 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GRANNY: CYBER ESCAPE 3D</title>
+    <title>NEON SWITCH: MERGE PRO</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@600;700&display=swap');
         
         * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-user-select: none; }
-        body, html { width: 100%; height: 100%; overflow: hidden; background: #000; font-family: 'Rajdhani', sans-serif; }
+        body, html { width: 100%; height: 100%; overflow: hidden; background: #020205; font-family: 'Rajdhani', sans-serif; }
         
-        #game-container { position: relative; width: 100%; height: 100%; }
+        #game-wrapper {
+            position: relative; width: 100%; height: 100%; max-width: 450px; margin: 0 auto;
+            background: #000; overflow: hidden; border: 2px solid rgba(0, 242, 254, 0.1);
+        }
+        
         canvas { display: block; width: 100%; height: 100%; }
         
-        /* Joystick & Controls Overlay */
-        .control-panel {
-            position: absolute; bottom: 30px; left: 0; width: 100%; padding: 0 30px;
-            display: flex; justify-content: space-between; align-items: center; z-index: 10; pointer-events: none;
-        }
-        .joystick-zone {
-            width: 120px; height: 120px; background: rgba(255,255,255,0.03);
-            border: 2px dashed rgba(255, 0, 85, 0.3); border-radius: 50%;
-            display: flex; justify-content: center; align-items: center; pointer-events: auto;
-        }
-        .joystick-stick {
-            width: 50px; height: 50px; background: linear-gradient(135deg, #ff0055, #990033);
-            border-radius: 50%; box-shadow: 0 0 20px #ff0055; transition: transform 0.1s;
-        }
-        .action-btn {
-            width: 70px; height: 70px; background: rgba(0, 242, 254, 0.1);
-            border: 2px solid #0ff; border-radius: 50%; color: #0ff;
-            font-family: 'Orbitron', sans-serif; font-weight: bold; font-size: 12px;
-            display: flex; justify-content: center; align-items: center;
-            pointer-events: auto; box-shadow: 0 0 15px rgba(0,242,254,0.3);
-        }
-        .action-btn:active { background: rgba(0, 242, 254, 0.4); transform: scale(0.95); }
-
-        /* HUD Info */
+        /* Play Store Style Premium HUD */
         .hud {
-            position: absolute; top: 20px; left: 20px; right: 20px;
-            display: flex; justify-content: space-between; pointer-events: none; z-index: 10;
+            position: absolute; top: 0; left: 0; width: 100%; padding: 20px;
+            pointer-events: none; z-index: 10; display: flex; justify-content: space-between;
         }
-        .hud-box {
-            background: rgba(0,0,0,0.6); padding: 8px 15px; border-radius: 4px;
-            border: 1px solid rgba(255,255,255,0.1); font-family: 'Orbitron', sans-serif;
-        }
-        .danger-alert { color: #ff0055; animation: pulse 1s infinite; text-shadow: 0 0 10px #ff0055; }
-
-        /* Interface Screens */
+        .hud-item { display: flex; flex-direction: column; }
+        .hud-label { font-size: 10px; color: #0ff; letter-spacing: 2px; font-family: 'Orbitron', sans-serif; text-shadow: 0 0 8px #0ff; }
+        .hud-val { font-size: 28px; font-family: 'Orbitron', sans-serif; color: #fff; font-weight: 900; }
+        
+        /* Mobile Smooth Glass Menus */
         .screen {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle, #1a0007 0%, #000 100%);
+            background: rgba(4, 4, 12, 0.96); backdrop-filter: blur(12px);
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            z-index: 20; padding: 20px; text-align: center;
+            z-index: 20; padding: 30px; text-align: center; transition: opacity 0.3s ease;
         }
         .hidden { display: none !important; }
         
-        h1 { font-family: 'Orbitron', sans-serif; font-size: 40px; color: #ff0055; text-shadow: 0 0 20px #ff0055; margin-bottom: 15px; }
-        p { color: #8a8f98; max-width: 80%; line-height: 1.6; margin-bottom: 30px; }
+        h1 {
+            font-family: 'Orbitron', sans-serif; font-size: 38px; font-weight: 900; letter-spacing: 2px;
+            background: linear-gradient(45deg, #00f2fe, #f0f, #ff0055); -webkit-background-clip: text; color: transparent;
+            margin-bottom: 10px; filter: drop-shadow(0 0 15px rgba(0,242,254,0.5));
+        }
+        p { color: #6c7280; font-size: 14px; margin-bottom: 30px; line-height: 1.6; max-width: 85%; }
         
         .btn {
-            background: transparent; border: 2px solid #ff0055; color: #ff0055;
-            padding: 12px 40px; font-family: 'Orbitron', sans-serif; font-size: 16px;
-            font-weight: bold; text-transform: uppercase; border-radius: 4px; cursor: pointer;
-            box-shadow: 0 0 15px rgba(255,0,85,0.2); transition: all 0.2s;
+            background: linear-gradient(135deg, rgba(0,242,254,0.1), rgba(255,0,85,0.1));
+            border: 2px solid #0ff; color: #0ff; padding: 15px 30px;
+            font-size: 16px; font-family: 'Orbitron', sans-serif; font-weight: 900; text-transform: uppercase;
+            border-radius: 6px; cursor: pointer; box-shadow: 0 0 15px rgba(0,242,254,0.2);
+            width: 85%; max-width: 260px; margin-bottom: 12px; letter-spacing: 1px;
         }
-        .btn:active { background: #ff0055; color: #000; box-shadow: 0 0 30px #ff0055; }
-
-        @keyframes pulse { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
+        .btn:active { transform: scale(0.96); background: rgba(0,242,254,0.2); box-shadow: 0 0 25px #0ff; }
+        .btn-ad { border-color: #ff0055; color: #ff0055; box-shadow: 0 0 15px rgba(255,0,85,0.2); }
     </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
 
-<div id="game-container">
+<div id="game-wrapper">
     <div class="hud">
-        <div class="hud-box" style="color: #0ff;">GÖREV: <span id="objective">ANAHTARI BUL VE KAÇ!</span></div>
-        <div class="hud-box danger-alert" id="radar">GRANNY UZAKTA</div>
-    </div>
-
-    <div class="control-panel">
-        <div class="joystick-zone" id="joyZone">
-            <div class="joystick-stick" id="joyStick"></div>
+        <div class="hud-item">
+            <span class="hud-label">RÜTBE</span>
+            <span class="hud-val" id="rank-text" style="font-size: 14px; color: #cd7f32;">ÇAYLAK BRONZ</span>
         </div>
-        <div class="action-btn" id="actionBtn">ARAÇ GEREÇ</div>
+        <div class="hud-item" style="text-align: right;">
+            <span class="hud-label">NET KAZANÇ</span>
+            <span class="hud-val" id="score-text">0 XP</span>
+        </div>
     </div>
+    
+    <canvas id="gameCanvas"></canvas>
 
-    <div id="start-screen" class="screen">
-        <h1>GRANNY 3D: CYBER</h1>
-        <p>Developer Burak v3.0 Harita Motoru.<br>Karanlık labirentte saklanan parlayan MAVİ anahtarı bul, ardından BEYAZ çıkış kapısına ulaş. Arkandaki KIRMIZI KÜP (Granny) ses çıkardığında seni avlamaya gelir!</p>
-        <button class="btn" onclick="init3DGame()">Korku Protokolünü Başlat</button>
+    <div id="menu-screen" class="screen">
+        <h1>NEON SWITCH</h1>
+        <p>Developer Burak Studio & Play Store Core Config.<br>Ekrana dokunarak merkezdeki neon üçgeni döndür. Yukarıdan düşen renkli küreleri kendi rengiyle eşleştir!</p>
+        <button class="btn" onclick="startPlayStoreEngine()">Sistemi Başlat</button>
     </div>
 
     <div id="gameover-screen" class="screen hidden">
-        <h1>YAKALANDIN!</h1>
-        <p style="color: #ff4a4a;">Granny seni karanlıkta kıstırdı. Donanım çöktü, hırs seviyesi maksimize ediliyor...</p>
-        <button class="btn" onclick="location.reload()">Yeniden Dene</button>
-    </div>
-
-    <div id="victory-screen" class="screen hidden">
-        <h1 style="color: #0ff; text-shadow: 0 0 20px #0ff;">BAŞARDIN!</h1>
-        <p style="color: #0ff;">Anahtarı buldun, Granny'nin elinden kaçtın ve tüm dünyaya gerçek bir "Developer" olduğunu kanıtladın! Haftalık CPM geliri tetikleniyor...</p>
-        <button class="btn" style="border-color: #0ff; color: #0ff;" onclick="location.reload()">Haritayı Sıfırla</button>
+        <h1 style="background: linear-gradient(45deg, #ff0055, #f0f); -webkit-background-clip: text; font-size: 32px;">BAĞLANTI KESİLDİ</h1>
+        <p>Hatalı veri eşleşmesi. Algoritma durduruldu.</p>
+        <div style="margin-bottom: 25px;">
+            <span class="hud-label">TOPLANAN TOTAL PUAN</span>
+            <div class="hud-val" id="final-payout" style="color: #0ff; font-size: 36px;">0 XP</div>
+        </div>
+        <button class="btn btn-ad" onclick="triggerAdSimulation()">🎬 REKLAM İZLE VE DEVAM ET</button>
+        <button class="btn" style="font-size: 13px; padding: 10px;" onclick="startPlayStoreEngine()">Yeniden Dene</button>
     </div>
 </div>
 
 <script>
-    // Engine Global Variables
-    let scene, camera, renderer;
-    let player = { x: 0, z: 0, angle: 0, speed: 0.12, hasKey: false };
-    let granny = { x: 12, z: 12, speed: 0.05, state: 'WANDER', targetX: 0, targetZ: 0 };
-    let maze = [
-        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-        [1,0,0,0,1,0,0,0,0,0,0,0,0,0,1],
-        [1,0,1,0,1,0,1,1,1,1,1,0,1,0,1],
-        [1,0,1,0,0,0,0,0,0,0,1,0,1,0,1],
-        [1,0,1,1,1,1,1,1,0,0,1,0,1,0,1],
-        [1,0,0,0,0,0,0,1,0,0,0,0,1,0,1],
-        [1,1,1,1,0,1,0,1,1,1,1,1,1,0,1],
-        [1,0,0,0,0,1,0,0,0,0,0,0,0,0,1],
-        [1,0,1,1,1,1,1,1,1,1,1,0,1,1,1],
-        [1,0,0,0,0,0,0,0,0,0,1,0,0,0,1],
-        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
-    ];
-    let mapScale = 3;
-    let wallMeshes = [];
-    let keyMesh, doorMesh, grannyMesh, flashLight;
-    let moveX = 0, moveZ = 0;
-    let isPlaying = false;
-
-    // Mobile Joystick Logic
-    const joyZone = document.getElementById('joyZone');
-    const joyStick = document.getElementById('joyStick');
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
     
-    joyZone.addEventListener('touchmove', (e) => {
+    const scoreText = document.getElementById('score-text');
+    const rankText = document.getElementById('rank-text');
+    const menuScreen = document.getElementById('menu-screen');
+    const gameoverScreen = document.getElementById('gameover-screen');
+    const finalPayout = document.getElementById('final-payout');
+
+    let w, h, state = 'MENU', frame = 0;
+    let score = 0, targetRotation = 0, currentRotation = 0;
+    
+    // Play Store Uyumlu 3'lü Neon Paleti
+    const colors = ['#00f2fe', '#f0f', '#00ff66'];
+    let currentSides = [0, 1, 2]; // Triangle layout profiles
+    
+    let obstacles = [];
+    let particles = [];
+    let audioCtx = null;
+
+    function resize() {
+        const wrapper = document.getElementById('game-wrapper');
+        w = canvas.width = wrapper.clientWidth;
+        h = canvas.height = wrapper.clientHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    // Web Audio API Synth (Sıfır harici dosya, kusursuz ses efekti!)
+    function playBeep(freq, type, duration) {
+        try {
+            if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            let osc = audioCtx.createOscillator();
+            let gain = audioCtx.createGain();
+            osc.type = type; osc.frequency.value = freq;
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + duration);
+        } catch(e) {}
+    }
+
+    // Mobil Dokunmatik Kontrol (Üçgeni 120 derece döndürür)
+    const handleInput = (e) => {
+        if (state !== 'PLAY') return;
         e.preventDefault();
-        const rect = joyZone.getBoundingClientRect();
-        const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2;
-        let touchX = e.touches[0].clientX - centerX;
-        let touchY = e.touches[0].clientY - centerY;
-        
-        let dist = Math.hypot(touchX, touchY);
-        let maxDist = 40;
-        if (dist > maxDist) {
-            touchX = (touchX / dist) * maxDist;
-            touchY = (touchY / dist) * maxDist;
+        targetRotation += (Math.PI * 2) / 3; // 120 Degrees jump
+        playBeep(440, 'triangle', 0.1);
+    };
+    window.addEventListener('mousedown', handleInput);
+    window.addEventListener('touchstart', handleInput, {passive: false});
+
+    function createExplosion(x, y, color) {
+        for(let i=0; i<12; i++) {
+            particles.push({
+                x: x, y: y,
+                vx: (Math.random() - 0.5) * 6,
+                vy: (Math.random() - 0.5) * 6,
+                alpha: 1, color: color
+            });
         }
+    }
+
+    function updateRankSystem() {
+        let r = "Çaylak Bronz", c = "#cd7f32";
+        if(score > 200) { r = "Demir Gri"; c = "#aaaaaa"; }
+        if(score > 500) { r = "Altın Sarı"; c = "#ffd700"; }
+        if(score > 1000) { r = "Elmas Mavi"; c = "#00f2fe"; }
+        if(score > 2000) { r = "Elit Kırmızı"; c = "#ff0055"; }
+        rankText.innerText = r; rankText.style.color = c;
+    }
+
+    function startPlayStoreEngine() {
+        menuScreen.classList.add('hidden');
+        gameoverScreen.classList.add('hidden');
+        score = 0; targetRotation = 0; currentRotation = 0;
+        obstacles = []; particles = [];
+        state = 'PLAY';
+        scoreText.innerText = "0 XP";
+        updateRankSystem();
+    }
+
+    function triggerGameOver() {
+        playBeep(150, 'sawtooth', 0.4);
+        state = 'OVER';
+        gameoverScreen.classList.remove('hidden');
+        finalPayout.innerText = score + " XP";
+    }
+
+    function triggerAdSimulation() {
+        alert("💰 Google AdMob SDK Dağıtımı: Reklam videosu başarıyla yüklendi. Play Store geliri optimize edildi! (Simülasyon)");
+        gameoverScreen.classList.add('hidden');
+        obstacles = []; state = 'PLAY';
+    }
+
+    // Render & Calculation Pipeline
+    function run() {
+        requestAnimationFrame(run);
         
-        joyStick.style.transform = `translate(${touchX}px, ${touchY}px)`;
-        
-        // Convert input to vector movement
-        moveX = touchX / maxDist;
-        moveZ = touchY / maxDist;
-    });
+        ctx.fillStyle = '#030308';
+        ctx.fillRect(0, 0, w, h);
 
-    joyZone.addEventListener('touchend', () => {
-        joyStick.style.transform = `translate(0px, 0px)`;
-        moveX = 0; moveZ = 0;
-    });
+        // Cyber Grid Lines
+        ctx.strokeStyle = 'rgba(0, 242, 254, 0.015)';
+        ctx.lineWidth = 1;
+        for(let i=0; i<w; i+=40) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, h); ctx.stroke(); }
 
-    // Support for PC keyboard arrows testing
-    window.addEventListener('keydown', (e) => {
-        if(e.key === 'ArrowUp') moveZ = -1;
-        if(e.key === 'ArrowDown') moveZ = 1;
-        if(e.key === 'ArrowLeft') moveX = -1;
-        if(e.key === 'ArrowRight') moveX = 1;
-    });
-    window.addEventListener('keyup', () => { moveX = 0; moveZ = 0; });
+        if (state !== 'PLAY' && state !== 'OVER') return;
+        frame++;
 
-    // Initialize 3D Engine Context
-    function init3DGame() {
-        document.getElementById('start-screen').classList.add('hidden');
-        isPlaying = true;
+        let cx = w / 2, cy = h / 2;
 
-        // 1. Create Scene & Renderer
-        scene = new THREE.Scene();
-        scene.fog = new THREE.FogExp2(0x000000, 0.15); // Fog makes it pitch black dark!
+        // Interpolate triangle rotation smoothly
+        currentRotation += (targetRotation - currentRotation) * 0.25;
 
-        camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 1000);
-        
-        renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.shadowMap.enabled = true;
-        document.getElementById('game-container').appendChild(renderer.domElement);
-
-        // 2. Build 3D Core Map Architecture from Grid Matrix
-        const wallGeo = new THREE.BoxGeometry(mapScale, 3, mapScale);
-        const wallMat = new THREE.MeshStandardMaterial({ color: 0x111118, roughness: 0.9 });
-
-        for (let r = 0; r < maze.length; r++) {
-            for (let c = 0; c < maze[r].length; c++) {
-                if (maze[r][c] === 1) {
-                    let wall = new THREE.Mesh(wallGeo, wallMat);
-                    wall.position.set(c * mapScale, 1.5, r * mapScale);
-                    scene.add(wall);
-                    wallMeshes.push(wall);
-                }
+        // 1. UPDATE AND SPAWN OBSTACLES
+        if (state === 'PLAY') {
+            let spawnRate = Math.max(30, 70 - Math.floor(score / 50));
+            if (frame % spawnRate === 0) {
+                obstacles.push({
+                    x: cx, y: -20,
+                    vy: 3 + Math.min(4, score / 300),
+                    colorIndex: Math.floor(Math.random() * 3),
+                    radius: 10
+                });
             }
         }
 
-        // Floor Grid
-        const floorGeo = new THREE.PlaneGeometry(100, 100);
-        const floorMat = new THREE.MeshStandardMaterial({ color: 0x050508, roughness: 0.8 });
-        const floor = new THREE.Mesh(floorGeo, floorMat);
-        floor.rotation.x = -Math.PI / 2;
-        scene.add(floor);
+        // Process falling spheres
+        for (let i = obstacles.length - 1; i >= 0; i--) {
+            let o = obstacles[i];
+            if (state === 'PLAY') o.y += o.vy;
 
-        // 3. Spawn Items & Cast Lights (The Key & Exit Door)
-        const keyGeo = new THREE.SphereGeometry(0.3, 8, 8);
-        const keyMat = new THREE.MeshBasicMaterial({ color: 0x00f2fe });
-        keyMesh = new THREE.Mesh(keyGeo, keyMat);
-        keyMesh.position.set(13 * mapScale, 0.5, 1 * mapScale); // Spawn key deep in room
-        scene.add(keyMesh);
+            // Render Sphere
+            ctx.shadowBlur = 15; ctx.shadowColor = colors[o.colorIndex];
+            ctx.fillStyle = colors[o.colorIndex];
+            ctx.beginPath(); ctx.arc(o.x, o.y, o.radius, 0, Math.PI*2); ctx.fill();
+            ctx.shadowBlur = 0;
 
-        const doorGeo = new THREE.BoxGeometry(0.2, 2.5, 2);
-        const doorMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0x333333 });
-        doorMesh = new THREE.Mesh(doorGeo, doorMat);
-        doorMesh.position.set(1 * mapScale, 1.2, 2 * mapScale);
-        scene.add(doorMesh);
+            // Collision check with central triangle shield
+            let dist = cy - 40 - o.y;
+            if (dist <= 0 && dist > -15) {
+                // Calculate which side of the triangle is facing UP
+                let normRot = ((currentRotation % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+                let sector = Math.floor(((normRot + Math.PI/6) % (Math.PI * 2)) / ((Math.PI * 2) / 3));
+                let facingColorIndex = (3 - sector) % 3;
 
-        // 4. Spawn Granny (The Killer Cyber Red Cube Entity)
-        const grannyGeo = new THREE.BoxGeometry(1.2, 2.2, 1.2);
-        const grannyMat = new THREE.MeshStandardMaterial({ color: #ff0055, roughness: 0.2 });
-        grannyMesh = new THREE.Mesh(grannyGeo, grannyMat);
-        grannyMesh.position.set(granny.x * mapScale, 1.1, granny.z * mapScale);
-        scene.add(grannyMesh);
-
-        // 5. Flashlight Attached to Camera (Player's Eyes)
-        flashLight = new THREE.SpotLight(0xffffff, 4, 25, Math.PI / 5, 0.5, 1);
-        flashLight.position.set(0, 0, 0);
-        scene.add(flashLight);
-        scene.add(flashLight.target);
-
-        // Set Player Spawn Position Coordinates
-        player.x = 1 * mapScale;
-        player.z = 1 * mapScale;
-
-        // Run Engine Process Loop
-        animate();
-    }
-
-    // AI Pathfinding & Mechanics Loop Processing
-    function animate() {
-        if (!isPlaying) return;
-        requestAnimationFrame(animate);
-
-        // 1. Process Vector Movement & Wall Collisions
-        let nextX = player.x + moveX * player.speed;
-        let nextZ = player.z + moveZ * player.speed;
-
-        // Simple bounding box checker against matrix blocks
-        let cellC = Math.floor((nextX + mapScale/2) / mapScale);
-        let cellR = Math.floor((nextZ + mapScale/2) / mapScale);
-
-        if (maze[cellR] && maze[cellR][cellC] === 0) {
-            player.x = nextX;
-            player.z = nextZ;
-        }
-
-        // Camera POV Follow Update
-        camera.position.set(player.x, 1.6, player.z);
-        if (moveX !== 0 || moveZ !== 0) {
-            player.angle = Math.atan2(moveX, moveZ);
-        }
-        
-        // Raycast flashlight angle facing vector position
-        flashLight.position.copy(camera.position);
-        let targetPosition = new THREE.Vector3(
-            player.x + Math.sin(player.angle),
-            1.5,
-            player.z + Math.cos(player.angle)
-        );
-        flashLight.target.position.copy(targetPosition);
-
-        // Rotate key for fancy visuals
-        keyMesh.rotation.y += 0.05;
-
-        // 2. Proximity Trigger Checks (Key Looting & Escaping)
-        let distToKey = Math.hypot(player.x - keyMesh.position.x, player.z - keyMesh.position.z);
-        if (distToKey < 1.2 && !player.hasKey) {
-            player.hasKey = true;
-            scene.remove(keyMesh);
-            document.getElementById('objective').innerText = "ÇIKIŞ KAPISINA GİT!";
-            document.getElementById('objective').style.color = "#ff0055";
-        }
-
-        let distToDoor = Math.hypot(player.x - doorMesh.position.x, player.z - doorMesh.position.z);
-        if (distToDoor < 1.5 && player.hasKey) {
-            isPlaying = false;
-            document.getElementById('victory-screen').classList.remove('hidden');
-        }
-
-        // 3. Granny Yapay Zekası (State Machine AI Module Config)
-        let distToPlayer = Math.hypot(player.x - grannyMesh.position.x, player.z - grannyMesh.position.z);
-        
-        // Radar HUD Warning Updates
-        const radar = document.getElementById('radar');
-        if(distToPlayer < 6) {
-            radar.innerText = "🚨 YAKINLAŞIYOR! SAKLAN!";
-            granny.state = 'CHASE'; // Aggressive hunt mode triggers instantly
-        } else {
-            radar.innerText = "GRANNY UZAKTA";
-            if (granny.state === 'CHASE') granny.state = 'WANDER';
-        }
-
-        if (granny.state === 'CHASE') {
-            // Path towards player vector coordinates directly
-            let dx = player.x - grannyMesh.position.x;
-            let dz = player.z - grannyMesh.position.z;
-            let angle = Math.atan2(dx, dz);
-            grannyMesh.position.x += Math.sin(angle) * granny.speed;
-            grannyMesh.position.z += Math.cos(angle) * granny.speed;
-        } else {
-            // Wander wandering around logic
-            if (Math.hypot(grannyMesh.position.x - granny.targetX, grannyMesh.position.z - granny.targetZ) < 0.5 || granny.targetX === 0) {
-                // Pick a valid random node grid square
-                let randR = Math.floor(Math.random() * maze.length);
-                let randC = Math.floor(Math.random() * maze[0].length);
-                if (maze[randR][randC] === 0) {
-                    granny.targetX = randC * mapScale;
-                    granny.targetZ = randR * mapScale;
+                if (facingColorIndex === o.colorIndex) {
+                    score += 25;
+                    scoreText.innerText = score + " XP";
+                    updateRankSystem();
+                    playBeep(600, 'sine', 0.08);
+                    createExplosion(o.x, o.y, colors[o.colorIndex]);
+                    obstacles.splice(i, 1);
+                } else {
+                    triggerGameOver();
                 }
+            } else if (o.y > h + 20) {
+                obstacles.splice(i, 1);
             }
-            let dx = granny.targetX - grannyMesh.position.x;
-            let dz = granny.targetZ - grannyMesh.position.z;
-            let angle = Math.atan2(dx, dz);
-            grannyMesh.position.x += Math.sin(angle) * (granny.speed * 0.6);
-            grannyMesh.position.z += Math.cos(angle) * (granny.speed * 0.6);
         }
 
-        // Kill boundaries trigger
-        if (distToPlayer < 1.0) {
-            isPlaying = false;
-            document.getElementById('gameover-screen').classList.remove('hidden');
+        // Process explosion particles
+        for (let i = particles.length - 1; i >= 0; i--) {
+            let p = particles[i]; p.x += p.vx; p.y += p.vy; p.alpha -= 0.04;
+            if (p.alpha <= 0) { particles.splice(i, 1); continue; }
+            ctx.save(); ctx.globalAlpha = p.alpha; ctx.fillStyle = p.color;
+            ctx.beginPath(); ctx.arc(p.x, p.y, 3, 0, Math.PI*2); ctx.fill(); ctx.restore();
         }
 
-        // Render scene calculations
-        renderer.render(scene, camera);
+        // 2. DRAW CENTRAL LOGIC TRIANGLE SHIELD
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(currentRotation);
+        
+        let triRadius = 45;
+        ctx.lineWidth = 8;
+        ctx.lineJoin = 'round';
+        
+        for (let i = 0; i < 3; i++) {
+            let angle1 = (i * Math.PI * 2) / 3 - Math.PI / 2;
+            let angle2 = ((i + 1) * Math.PI * 2) / 3 - Math.PI / 2;
+            
+            ctx.beginPath();
+            ctx.moveTo(Math.sin(angle1) * triRadius, Math.cos(angle1) * triRadius);
+            ctx.lineTo(Math.sin(angle2) * triRadius, Math.cos(angle2) * triRadius);
+            
+            ctx.strokeStyle = colors[i];
+            ctx.shadowBlur = 20; ctx.shadowColor = colors[i];
+            ctx.stroke();
+        }
+        ctx.restore();
+        ctx.shadowBlur = 0;
     }
+
+    run();
 </script>
 </body>
 </html>
