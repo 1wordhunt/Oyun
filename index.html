@@ -3,287 +3,389 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NEON SWITCH: MERGE PRO</title>
+    <title>SQUAD WARFARE: BURAK v3.0</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@600;700&display=swap');
         
         * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-user-select: none; }
-        body, html { width: 100%; height: 100%; overflow: hidden; background: #020205; font-family: 'Rajdhani', sans-serif; }
+        body, html { width: 100%; height: 100%; overflow: hidden; background: #111; font-family: 'Rajdhani', sans-serif; }
         
-        #game-wrapper {
-            position: relative; width: 100%; height: 100%; max-width: 450px; margin: 0 auto;
-            background: #000; overflow: hidden; border: 2px solid rgba(0, 242, 254, 0.1);
+        #game-container {
+            position: relative; width: 100%; height: 100%; max-width: 800px; margin: 0 auto;
+            background: #223; overflow: hidden; border: 3px solid #334;
         }
         
-        canvas { display: block; width: 100%; height: 100%; }
+        canvas { display: block; width: 100%; height: 100%; background: #1e2514; } /* Çimen/Savaş alanı rengi */
         
-        /* Play Store Style Premium HUD */
-        .hud {
-            position: absolute; top: 0; left: 0; width: 100%; padding: 20px;
+        /* Gelişmiş Savaş HUD */
+        .top-bar {
+            position: absolute; top: 0; left: 0; width: 100%; padding: 15px;
             pointer-events: none; z-index: 10; display: flex; justify-content: space-between;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.8), rgba(0,0,0,0));
         }
-        .hud-item { display: flex; flex-direction: column; }
-        .hud-label { font-size: 10px; color: #0ff; letter-spacing: 2px; font-family: 'Orbitron', sans-serif; text-shadow: 0 0 8px #0ff; }
-        .hud-val { font-size: 28px; font-family: 'Orbitron', sans-serif; color: #fff; font-weight: 900; }
+        .team-score { font-family: 'Orbitron', sans-serif; font-size: 18px; font-weight: 900; }
+        .blue-t { color: #00f2fe; text-shadow: 0 0 10px #00f2fe; }
+        .red-t { color: #ff0055; text-shadow: 0 0 10px #ff0055; }
         
-        /* Mobile Smooth Glass Menus */
+        /* Skill Butonları (Mobile Uygun) */
+        .skill-bar {
+            position: absolute; bottom: 20px; right: 20px; z-index: 10;
+            display: flex; gap: 10px; pointer-events: auto;
+        }
+        .skill-btn {
+            width: 60px; height: 60px; background: rgba(0,0,0,0.6); border: 2px solid #fff;
+            border-radius: 50%; color: #fff; font-family: 'Orbitron', sans-serif;
+            font-size: 10px; font-weight: bold; display: flex; justify-content: center;
+            align-items: center; flex-direction: column; cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5); transition: transform 0.1s;
+        }
+        .skill-btn:active { transform: scale(0.9); }
+        #s1 { border-color: #00f2fe; box-shadow: 0 0 15px rgba(0,242,254,0.4); }
+        #s2 { border-color: #f0f; box-shadow: 0 0 15px rgba(240,0,255,0.4); }
+        #s3 { border-color: #ffd700; box-shadow: 0 0 15px rgba(255,215,0,0.4); }
+
+        /* Mobil Joystick Alanı */
+        .joystick-container {
+            position: absolute; bottom: 20px; left: 20px; z-index: 10;
+            width: 100px; height: 100px; background: rgba(255,255,255,0.05);
+            border: 2px dashed rgba(255,255,255,0.2); border-radius: 50%;
+            display: flex; justify-content: center; align-items: center; pointer-events: auto;
+        }
+        .joystick-knob {
+            width: 40px; height: 40px; background: #fff; border-radius: 50%;
+            box-shadow: 0 0 10px rgba(255,255,255,0.8); transition: transform 0.05s;
+        }
+
+        /* Ekranlar */
         .screen {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(4, 4, 12, 0.96); backdrop-filter: blur(12px);
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            z-index: 20; padding: 30px; text-align: center; transition: opacity 0.3s ease;
+            background: rgba(10, 10, 20, 0.95); display: flex; flex-direction: column;
+            justify-content: center; align-items: center; z-index: 20; color: #fff; text-align: center;
         }
         .hidden { display: none !important; }
-        
-        h1 {
-            font-family: 'Orbitron', sans-serif; font-size: 38px; font-weight: 900; letter-spacing: 2px;
-            background: linear-gradient(45deg, #00f2fe, #f0f, #ff0055); -webkit-background-clip: text; color: transparent;
-            margin-bottom: 10px; filter: drop-shadow(0 0 15px rgba(0,242,254,0.5));
-        }
-        p { color: #6c7280; font-size: 14px; margin-bottom: 30px; line-height: 1.6; max-width: 85%; }
-        
         .btn {
-            background: linear-gradient(135deg, rgba(0,242,254,0.1), rgba(255,0,85,0.1));
-            border: 2px solid #0ff; color: #0ff; padding: 15px 30px;
-            font-size: 16px; font-family: 'Orbitron', sans-serif; font-weight: 900; text-transform: uppercase;
-            border-radius: 6px; cursor: pointer; box-shadow: 0 0 15px rgba(0,242,254,0.2);
-            width: 85%; max-width: 260px; margin-bottom: 12px; letter-spacing: 1px;
+            background: #ff0055; color: #fff; border: none; padding: 12px 30px;
+            font-family: 'Orbitron', sans-serif; font-weight: bold; border-radius: 5px;
+            cursor: pointer; box-shadow: 0 0 15px #ff0055; margin-top: 20px;
         }
-        .btn:active { transform: scale(0.96); background: rgba(0,242,254,0.2); box-shadow: 0 0 25px #0ff; }
-        .btn-ad { border-color: #ff0055; color: #ff0055; box-shadow: 0 0 15px rgba(255,0,85,0.2); }
     </style>
 </head>
 <body>
 
-<div id="game-wrapper">
-    <div class="hud">
-        <div class="hud-item">
-            <span class="hud-label">RÜTBE</span>
-            <span class="hud-val" id="rank-text" style="font-size: 14px; color: #cd7f32;">ÇAYLAK BRONZ</span>
+<div id="game-container">
+    <div class="top-bar">
+        <div>
+            <span class="blue-t" id="player-tag">BURAK_V3.0 (Leader)</span><br>
+            <span style="color: #aaa; font-size: 12px;">Rütbe: </span><span id="rank-hud" style="color: #cd7f32; font-weight: bold;">Çaylak Bronz</span>
         </div>
-        <div class="hud-item" style="text-align: right;">
-            <span class="hud-label">NET KAZANÇ</span>
-            <span class="hud-val" id="score-text">0 XP</span>
+        <div class="team-score">
+            <span class="blue-t" id="blue-score">MAVİ: 0</span> 
+            <span style="color: #fff;">|</span> 
+            <span class="red-t" id="red-score">KIRMIZI: 0</span>
         </div>
     </div>
-    
-    <canvas id="gameCanvas"></canvas>
 
-    <div id="menu-screen" class="screen">
-        <h1>NEON SWITCH</h1>
-        <p>Developer Burak Studio & Play Store Core Config.<br>Ekrana dokunarak merkezdeki neon üçgeni döndür. Yukarıdan düşen renkli küreleri kendi rengiyle eşleştir!</p>
-        <button class="btn" onclick="startPlayStoreEngine()">Sistemi Başlat</button>
+    <div class="joystick-container" id="joyZone">
+        <div class="joystick-knob" id="joyKnob"></div>
     </div>
 
-    <div id="gameover-screen" class="screen hidden">
-        <h1 style="background: linear-gradient(45deg, #ff0055, #f0f); -webkit-background-clip: text; font-size: 32px;">BAĞLANTI KESİLDİ</h1>
-        <p>Hatalı veri eşleşmesi. Algoritma durduruldu.</p>
-        <div style="margin-bottom: 25px;">
-            <span class="hud-label">TOPLANAN TOTAL PUAN</span>
-            <div class="hud-val" id="final-payout" style="color: #0ff; font-size: 36px;">0 XP</div>
-        </div>
-        <button class="btn btn-ad" onclick="triggerAdSimulation()">🎬 REKLAM İZLE VE DEVAM ET</button>
-        <button class="btn" style="font-size: 13px; padding: 10px;" onclick="startPlayStoreEngine()">Yeniden Dene</button>
+    <div class="skill-bar">
+        <div class="skill-btn" id="s1" onclick="castSkill(1)"><span>SKILL 1</span><span style="font-size: 8px; color: #0ff;">Mızrak</span></div>
+        <div class="skill-btn" id="s2" onclick="castSkill(2)"><span>SKILL 2</span><span style="font-size: 8px; color: #f0f;">Katliam</span></div>
+        <div class="skill-btn" id="s3" onclick="castSkill(3)"><span>ULTI</span><span style="font-size: 8px; color: #ffd700;">Patlama</span></div>
+    </div>
+
+    <canvas id="battleCanvas"></canvas>
+
+    <div id="start-screen" class="screen">
+        <h1 style="font-family: 'Orbitron', sans-serif; color: #00f2fe; text-shadow: 0 0 15px #00f2fe;">SQUAD WARFARE</h1>
+        <p style="color: #aaa; max-width: 80%; margin-top: 10px;">Mavi takımın lideri Sensin! Sol alttaki joystick ile hareket et, sağ alttaki yeteneklerle kırmızı takımı yok et!</p>
+        <button class="btn" onclick="startBattle()">Savaşa Gir</button>
     </div>
 </div>
 
 <script>
-    const canvas = document.getElementById('gameCanvas');
+    const canvas = document.getElementById('battleCanvas');
     const ctx = canvas.getContext('2d');
     
-    const scoreText = document.getElementById('score-text');
-    const rankText = document.getElementById('rank-text');
-    const menuScreen = document.getElementById('menu-screen');
-    const gameoverScreen = document.getElementById('gameover-screen');
-    const finalPayout = document.getElementById('final-payout');
-
-    let w, h, state = 'MENU', frame = 0;
-    let score = 0, targetRotation = 0, currentRotation = 0;
+    let w, h, state = 'MENU';
+    let blueKills = 0, redKills = 0, playerXP = 0;
     
-    // Play Store Uyumlu 3'lü Neon Paleti
-    const colors = ['#00f2fe', '#f0f', '#00ff66'];
-    let currentSides = [0, 1, 2]; // Triangle layout profiles
-    
-    let obstacles = [];
-    let particles = [];
-    let audioCtx = null;
+    let player = { x: 100, y: 200, r: 15, speed: 3.5, hp: 100, maxHp: 100, team: 'blue', targetX: 100, targetY: 200 };
+    let entities = []; // Tüm botlar ve takım arkadaşları buraya gelecek
+    let projectiles = [];
+    let damageNumbers = [];
 
+    // Harita Boyut Ayarı
     function resize() {
-        const wrapper = document.getElementById('game-wrapper');
-        w = canvas.width = wrapper.clientWidth;
-        h = canvas.height = wrapper.clientHeight;
+        const container = document.getElementById('game-container');
+        w = canvas.width = container.clientWidth;
+        h = canvas.height = container.clientHeight;
     }
     window.addEventListener('resize', resize);
     resize();
 
-    // Web Audio API Synth (Sıfır harici dosya, kusursuz ses efekti!)
-    function playBeep(freq, type, duration) {
-        try {
-            if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            let osc = audioCtx.createOscillator();
-            let gain = audioCtx.createGain();
-            osc.type = type; osc.frequency.value = freq;
-            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.start(); osc.stop(audioCtx.currentTime + duration);
-        } catch(e) {}
+    // Mobil Joystick Kontrolü
+    const joyZone = document.getElementById('joyZone');
+    const joyKnob = document.getElementById('joyKnob');
+    let moveVector = { x: 0, y: 0 };
+
+    joyZone.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        const rect = joyZone.getBoundingClientRect();
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+        let tx = e.touches[0].clientX - cx;
+        let ty = e.touches[0].clientY - cy;
+        let dist = Math.hypot(tx, ty);
+        if(dist > 35) { tx = (tx/dist)*35; ty = (ty/dist)*35; }
+        joyKnob.style.transform = `translate(${tx}px, ${ty}px)`;
+        moveVector.x = tx / 35;
+        moveVector.y = ty / 35;
+    });
+    joyZone.addEventListener('touchend', () => {
+        joyKnob.style.transform = 'translate(0px, 0px)';
+        moveVector = { x: 0, y: 0 };
+    });
+
+    // Klavye Desteği (PC Testleri İçin)
+    window.addEventListener('keydown', (e) => {
+        if(e.key === 'w' || e.key === 'ArrowUp') moveVector.y = -1;
+        if(e.key === 's' || e.key === 'ArrowDown') moveVector.y = 1;
+        if(e.key === 'a' || e.key === 'ArrowLeft') moveVector.x = -1;
+        if(e.key === 'd' || e.key === 'ArrowRight') moveVector.x = 1;
+        if(e.key === '1') castSkill(1);
+        if(e.key === '2') castSkill(2);
+        if(e.key === '3') castSkill(3);
+    });
+    window.addEventListener('keyup', () => { moveVector = { x: 0, y: 0 }; });
+
+    // Botları Dünyaya Bırakma Algoritması
+    function spawnBots() {
+        entities = [];
+        // Mavi Takım Arkadaşları (Sarı/Yeşil İsimli Can cana dostlar)
+        entities.push({ id: 'Alpha_Sigma_USA', x: 80, y: 100, r: 14, hp: 100, team: 'blue', speed: 2 });
+        entities.push({ id: 'Clean_Lucifer', x: 80, y: 300, r: 14, hp: 100, team: 'blue', speed: 2 });
+        
+        // Kırmızı Takım (Düşman Botlar)
+        entities.push({ id: 'Düşman_X', x: 650, y: 100, r: 14, hp: 120, team: 'red', speed: 1.8 });
+        entities.push({ id: 'Düşman_Y', x: 650, y: 200, r: 14, hp: 120, team: 'red', speed: 1.8 });
+        entities.push({ id: 'Düşman_Z', x: 650, y: 350, r: 14, hp: 120, team: 'red', speed: 1.8 });
     }
 
-    // Mobil Dokunmatik Kontrol (Üçgeni 120 derece döndürür)
-    const handleInput = (e) => {
-        if (state !== 'PLAY') return;
-        e.preventDefault();
-        targetRotation += (Math.PI * 2) / 3; // 120 Degrees jump
-        playBeep(440, 'triangle', 0.1);
-    };
-    window.addEventListener('mousedown', handleInput);
-    window.addEventListener('touchstart', handleInput, {passive: false});
+    function startBattle() {
+        document.getElementById('start-screen').classList.add('hidden');
+        blueKills = 0; redKills = 0; playerXP = 0;
+        player.x = 100; player.y = h/2; player.hp = 100;
+        spawnBots();
+        state = 'PLAY';
+    }
 
-    function createExplosion(x, y, color) {
-        for(let i=0; i<12; i++) {
-            particles.push({
-                x: x, y: y,
-                vx: (Math.random() - 0.5) * 6,
-                vy: (Math.random() - 0.5) * 6,
-                alpha: 1, color: color
+    function checkRank(xp) {
+        let r = "Çaylak Bronz", c = "#cd7f32";
+        if(xp > 200) { r = "Demir Gri"; c = "#aaaaaa"; }
+        if(xp > 500) { r = "Altın Sarı"; c = "#ffd700"; }
+        if(xp > 1000) { r = "Elmas Mavi"; c = "#00f2fe"; }
+        if(xp > 2000) { r = "Elit Kırmızı"; c = "#ff0055"; }
+        const rHud = document.getElementById('rank-hud');
+        rHud.innerText = r; rHud.style.color = c;
+    }
+
+    // Yetenekleri Tetikleme Motoru
+    function castSkill(type) {
+        if (state !== 'PLAY' || player.hp <= 0) return;
+        
+        if (type === 1) { // Düz Işın Mızrağı
+            projectiles.push({ x: player.x, y: player.y, vx: 8, vy: 0, r: 6, color: '#00f2fe', damage: 35, team: 'blue' });
+        }
+        if (type === 2) { // Çift Yönlü Katliam Dalgası
+            projectiles.push({ x: player.x, y: player.y, vx: 6, vy: 4, r: 8, color: '#f0f', damage: 45, team: 'blue' });
+            projectiles.push({ x: player.x, y: player.y, vx: 6, vy: -4, r: 8, color: '#f0f', damage: 45, team: 'blue' });
+        }
+        if (type === 3) { // Alan Etkili Devasa Ulti Patlaması
+            entities.forEach(e => {
+                if (e.team === 'red') {
+                    let d = Math.hypot(e.x - player.x, e.y - player.y);
+                    if (dist < 180) { // Yakındaki her düşmana dev hasar
+                        e.hp -= 70;
+                        damageNumbers.push({ x: e.x, y: e.y - 15, text: '70 CRITICAL!', color: '#ffd700', timer: 40 });
+                    }
+                }
             });
+            // Ulti Efekt Halkası
+            damageNumbers.push({ x: player.x, y: player.y, text: '💥 ULTIMATE', color: '#ffd700', timer: 30 });
         }
     }
 
-    function updateRankSystem() {
-        let r = "Çaylak Bronz", c = "#cd7f32";
-        if(score > 200) { r = "Demir Gri"; c = "#aaaaaa"; }
-        if(score > 500) { r = "Altın Sarı"; c = "#ffd700"; }
-        if(score > 1000) { r = "Elmas Mavi"; c = "#00f2fe"; }
-        if(score > 2000) { r = "Elit Kırmızı"; c = "#ff0055"; }
-        rankText.innerText = r; rankText.style.color = c;
-    }
+    // Savaş Döngüsü Ana Hesaplamaları (Engine Frame)
+    function update() {
+        if (state !== 'PLAY') return;
 
-    function startPlayStoreEngine() {
-        menuScreen.classList.add('hidden');
-        gameoverScreen.classList.add('hidden');
-        score = 0; targetRotation = 0; currentRotation = 0;
-        obstacles = []; particles = [];
-        state = 'PLAY';
-        scoreText.innerText = "0 XP";
-        updateRankSystem();
-    }
-
-    function triggerGameOver() {
-        playBeep(150, 'sawtooth', 0.4);
-        state = 'OVER';
-        gameoverScreen.classList.remove('hidden');
-        finalPayout.innerText = score + " XP";
-    }
-
-    function triggerAdSimulation() {
-        alert("💰 Google AdMob SDK Dağıtımı: Reklam videosu başarıyla yüklendi. Play Store geliri optimize edildi! (Simülasyon)");
-        gameoverScreen.classList.add('hidden');
-        obstacles = []; state = 'PLAY';
-    }
-
-    // Render & Calculation Pipeline
-    function run() {
-        requestAnimationFrame(run);
+        // 1. Oyuncu Hareketi
+        player.x += moveVector.x * player.speed;
+        player.y += moveVector.y * player.speed;
         
-        ctx.fillStyle = '#030308';
-        ctx.fillRect(0, 0, w, h);
+        // Sınır kontrolleri
+        player.x = Math.max(player.r, Math.min(w - player.r, player.x));
+        player.y = Math.max(player.r, Math.min(h - player.r, player.y));
 
-        // Cyber Grid Lines
-        ctx.strokeStyle = 'rgba(0, 242, 254, 0.015)';
-        ctx.lineWidth = 1;
-        for(let i=0; i<w; i+=40) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, h); ctx.stroke(); }
+        // 2. Yapay Zekalı Takım Arkadaşları ve Düşman Botların Savaş Mantığı
+        entities.forEach(bot => {
+            if (bot.hp <= 0) return;
 
-        if (state !== 'PLAY' && state !== 'OVER') return;
-        frame++;
+            // Kendine en yakın zıt takımdaki hedefi bulma algoritmaları
+            let target = (bot.team === 'blue') ? player : null; 
+            let minDist = 9999;
 
-        let cx = w / 2, cy = h / 2;
-
-        // Interpolate triangle rotation smoothly
-        currentRotation += (targetRotation - currentRotation) * 0.25;
-
-        // 1. UPDATE AND SPAWN OBSTACLES
-        if (state === 'PLAY') {
-            let spawnRate = Math.max(30, 70 - Math.floor(score / 50));
-            if (frame % spawnRate === 0) {
-                obstacles.push({
-                    x: cx, y: -20,
-                    vy: 3 + Math.min(4, score / 300),
-                    colorIndex: Math.floor(Math.random() * 3),
-                    radius: 10
+            if (bot.team === 'red') {
+                // Kırmızılar oyuncuya veya mavi botlara saldırır
+                let dToP = Math.hypot(player.x - bot.x, player.y - bot.y);
+                if (dToP < minDist && player.hp > 0) { minDist = dToP; target = player; }
+                
+                entities.forEach(b => {
+                    if (b.team === 'blue' && b.hp > 0) {
+                        let d = Math.hypot(b.x - bot.x, b.y - bot.y);
+                        if (d < minDist) { minDist = d; target = b; }
+                    }
+                });
+            } else {
+                // Mavi botlar kırmızı botları hedefler
+                entities.forEach(r => {
+                    if (r.team === 'red' && r.hp > 0) {
+                        let d = Math.hypot(r.x - bot.x, r.y - bot.y);
+                        if (d < minDist) { minDist = d; target = r; }
+                    }
                 });
             }
-        }
 
-        // Process falling spheres
-        for (let i = obstacles.length - 1; i >= 0; i--) {
-            let o = obstacles[i];
-            if (state === 'PLAY') o.y += o.vy;
+            // Hedefe doğru akıllıca yürüme ve otomatik düz vuruş fırlatma
+            if (target) {
+                let angle = Math.atan2(target.y - bot.y, target.x - bot.x);
+                bot.x += Math.cos(angle) * bot.speed;
+                bot.y += Math.sin(angle) * bot.speed;
 
-            // Render Sphere
-            ctx.shadowBlur = 15; ctx.shadowColor = colors[o.colorIndex];
-            ctx.fillStyle = colors[o.colorIndex];
-            ctx.beginPath(); ctx.arc(o.x, o.y, o.radius, 0, Math.PI*2); ctx.fill();
-            ctx.shadowBlur = 0;
-
-            // Collision check with central triangle shield
-            let dist = cy - 40 - o.y;
-            if (dist <= 0 && dist > -15) {
-                // Calculate which side of the triangle is facing UP
-                let normRot = ((currentRotation % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
-                let sector = Math.floor(((normRot + Math.PI/6) % (Math.PI * 2)) / ((Math.PI * 2) / 3));
-                let facingColorIndex = (3 - sector) % 3;
-
-                if (facingColorIndex === o.colorIndex) {
-                    score += 25;
-                    scoreText.innerText = score + " XP";
-                    updateRankSystem();
-                    playBeep(600, 'sine', 0.08);
-                    createExplosion(o.x, o.y, colors[o.colorIndex]);
-                    obstacles.splice(i, 1);
-                } else {
-                    triggerGameOver();
+                // Belirli aralıklarla ateş etme (Auto-attack)
+                if (Math.random() < 0.015) {
+                    projectiles.push({
+                        x: bot.x, y: bot.y,
+                        vx: Math.cos(angle) * 5,
+                        vy: Math.sin(angle) * 5,
+                        r: 4, color: bot.team === 'blue' ? '#00f2fe' : '#ff0055',
+                        damage: 12, team: bot.team
+                    });
                 }
-            } else if (o.y > h + 20) {
-                obstacles.splice(i, 1);
+            }
+        });
+
+        // 3. Mermilerin Çarpışma Testleri
+        for (let i = projectiles.length - 1; i >= 0; i--) {
+            let p = projectiles[i];
+            p.x += p.vx; p.y += p.vy;
+
+            // Ekrandan çıkan mermileri temizle
+            if (p.x < 0 || p.x > w || p.y < 0 || p.y > h) { projectiles.splice(i, 1); continue; }
+
+            // Oyuncuya çarpma kontrolü
+            if (p.team === 'red' && player.hp > 0) {
+                if (Math.hypot(player.x - p.x, player.y - p.y) < player.r + p.r) {
+                    player.hp -= p.damage;
+                    damageNumbers.push({ x: player.x, y: player.y - 10, text: '-' + p.damage, color: '#ff0055', timer: 30 });
+                    projectiles.splice(i, 1);
+                    if (player.hp <= 0) { redKills++; document.getElementById('red-score').innerText = "KIRMIZI: " + redKills; setTimeout(startBattle, 3000); }
+                    continue;
+                }
+            }
+
+            // Botlara çarpma kontrolü
+            for (let j = 0; j < entities.length; j++) {
+                let bot = entities[j];
+                if (bot.hp > 0 && bot.team !== p.team) {
+                    if (Math.hypot(bot.x - p.x, bot.y - p.y) < bot.r + p.r) {
+                        bot.hp -= p.damage;
+                        damageNumbers.push({ x: bot.x, y: bot.y - 10, text: '-' + p.damage, color: p.team === 'blue' ? '#00f2fe' : '#ff0055', timer: 30 });
+                        projectiles.splice(i, 1);
+                        
+                        if (bot.hp <= 0) {
+                            if (p.team === 'blue') {
+                                blueKills++;
+                                playerXP += 75;
+                                document.getElementById('blue-score').innerText = "MAVİ: " + blueKills;
+                                checkRank(playerXP);
+                            } else {
+                                redKills++;
+                                document.getElementById('red-score').innerText = "KIRMIZI: " + redKills;
+                            }
+                            // Ölen botu canlandır (Respawn sistemi)
+                            setTimeout(() => { bot.hp = 100; bot.x = bot.team === 'blue' ? 50 : w-50; }, 4000);
+                        }
+                        break;
+                    }
+                }
             }
         }
 
-        // Process explosion particles
-        for (let i = particles.length - 1; i >= 0; i--) {
-            let p = particles[i]; p.x += p.vx; p.y += p.vy; p.alpha -= 0.04;
-            if (p.alpha <= 0) { particles.splice(i, 1); continue; }
-            ctx.save(); ctx.globalAlpha = p.alpha; ctx.fillStyle = p.color;
-            ctx.beginPath(); ctx.arc(p.x, p.y, 3, 0, Math.PI*2); ctx.fill(); ctx.restore();
+        // Hasar yazılarının ömrünü azaltma
+        for (let i = damageNumbers.length - 1; i >= 0; i--) {
+            damageNumbers[i].timer--;
+            damageNumbers[i].y -= 0.5;
+            if (damageNumbers[i].timer <= 0) damageNumbers.splice(i, 1);
         }
-
-        // 2. DRAW CENTRAL LOGIC TRIANGLE SHIELD
-        ctx.save();
-        ctx.translate(cx, cy);
-        ctx.rotate(currentRotation);
-        
-        let triRadius = 45;
-        ctx.lineWidth = 8;
-        ctx.lineJoin = 'round';
-        
-        for (let i = 0; i < 3; i++) {
-            let angle1 = (i * Math.PI * 2) / 3 - Math.PI / 2;
-            let angle2 = ((i + 1) * Math.PI * 2) / 3 - Math.PI / 2;
-            
-            ctx.beginPath();
-            ctx.moveTo(Math.sin(angle1) * triRadius, Math.cos(angle1) * triRadius);
-            ctx.lineTo(Math.sin(angle2) * triRadius, Math.cos(angle2) * triRadius);
-            
-            ctx.strokeStyle = colors[i];
-            ctx.shadowBlur = 20; ctx.shadowColor = colors[i];
-            ctx.stroke();
-        }
-        ctx.restore();
-        ctx.shadowBlur = 0;
     }
 
-    run();
+    // Grafik Çizim Motoru (Draw Frame)
+    function draw() {
+        ctx.clearRect(0, 0, w, h);
+
+        // Savaş Meydanı Çizgileri / Taktik Grid Alanı
+        ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+        for(let i=0; i<w; i+=50) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, h); ctx.stroke(); }
+
+        if (state !== 'PLAY') return;
+
+        // 1. Oyuncunun Çizimi (Burak_v3.0 - Yeşil/Mavi Karakter)
+        if (player.hp > 0) {
+            ctx.fillStyle = '#00f2fe';
+            ctx.beginPath(); ctx.arc(player.x, player.y, player.r, 0, Math.PI*2); ctx.fill();
+            // Can barı
+            ctx.fillStyle = '#00ff66';
+            ctx.fillRect(player.x - 20, player.y - 25, (player.hp / player.maxHp) * 40, 5);
+        }
+
+        // 2. Botların Çizimi
+        entities.forEach(bot => {
+            if (bot.hp <= 0) return;
+            ctx.fillStyle = bot.team === 'blue' ? '#00ff66' : '#ff0055';
+            ctx.beginPath(); ctx.arc(bot.x, bot.y, bot.r, 0, Math.PI*2); ctx.fill();
+            
+            // İsim etiketleri
+            ctx.fillStyle = '#fff'; ctx.font = '10px Rajdhani'; ctx.textAlign = 'center';
+            ctx.fillText(bot.id, bot.x, bot.y - 28);
+
+            // Can barları
+            ctx.fillStyle = '#ff0000'; ctx.fillRect(bot.x - 15, bot.y - 20, 30, 4);
+            ctx.fillStyle = bot.team === 'blue' ? '#00ff66' : '#ffea00';
+            ctx.fillRect(bot.x - 15, bot.y - 20, (bot.hp / (bot.team === 'blue' ? 100 : 120)) * 30, 4);
+        });
+
+        // 3. Mermilerin Çizimi
+        projectiles.forEach(p => {
+            ctx.fillStyle = p.color;
+            ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2); ctx.fill();
+        });
+
+        // 4. Uçan Hasar Sayılarının Çizimi
+        damageNumbers.forEach(d => {
+            ctx.fillStyle = d.color; ctx.font = 'bold 12px Orbitron'; ctx.textAlign = 'center';
+            ctx.fillText(d.text, d.x, d.y);
+        });
+    }
+
+    function engineLoop() {
+        update();
+        draw();
+        requestAnimationFrame(engineLoop);
+    }
+    requestAnimationFrame(engineLoop);
 </script>
 </body>
 </html>
