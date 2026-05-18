@@ -3,362 +3,321 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GLOW UP: Neon Alpha</title>
+    <title>CYBER GLOW: EVOLUTION</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@600;700&display=swap');
         
-        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
-        body { background: #050505; overflow: hidden; font-family: 'Rajdhani', sans-serif; color: #fff; }
+        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-user-select: none; }
+        body, html { width: 100%; height: 100%; overflow: hidden; background: #030308; font-family: 'Rajdhani', sans-serif; }
         
-        #ui-layer {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none; z-index: 10; padding: 15px; display: flex; flex-direction: column;
+        #game-container {
+            position: relative; width: 100%; height: 100%; max-width: 450px; margin: 0 auto;
+            background: #000; overflow: hidden; box-shadow: 0 0 40px rgba(0, 242, 254, 0.15);
         }
         
-        /* Neon UI Elements */
-        .hud-header {
-            display: flex; justify-content: space-between; align-items: flex-start;
-            text-shadow: 0 0 10px #0ff;
-        }
-        .dev-badge {
-            background: linear-gradient(90deg, rgba(0,242,254,0.2), transparent);
-            border-left: 4px solid #0ff; padding: 5px 15px; font-family: 'Orbitron', sans-serif;
-            font-size: 14px; letter-spacing: 2px; color: #0ff; text-transform: uppercase;
-        }
+        canvas { display: block; width: 100%; height: 100%; }
         
-        .score-board { text-align: right; }
-        .score-val { font-size: 32px; font-family: 'Orbitron', sans-serif; color: #fff; text-shadow: 0 0 15px #f0f; }
-        .rank-val { font-size: 18px; color: #cd7f32; text-shadow: 0 0 10px #cd7f32; text-transform: uppercase; margin-top: -5px; }
+        /* Cyberpunk UI Overlay */
+        .hud {
+            position: absolute; top: 0; left: 0; width: 100%; padding: 20px;
+            pointer-events: none; z-index: 10; display: flex; justify-content: space-between;
+        }
+        .stat-group { display: flex; flex-direction: column; }
+        .label { font-size: 11px; color: #0ff; letter-spacing: 2px; font-family: 'Orbitron', sans-serif; text-shadow: 0 0 5px #0ff; }
+        .val { font-size: 28px; font-family: 'Orbitron', sans-serif; color: #fff; font-weight: 900; }
+        
+        /* Glow Meter */
+        .meter-box {
+            position: absolute; bottom: 20px; left: 20px; right: 20px; pointer-events: none; z-index: 10;
+        }
+        .bar {
+            width: 100%; height: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(0,242,254,0.3);
+            border-radius: 5px; overflow: hidden; margin-top: 5px; box-shadow: 0 0 10px rgba(0,242,254,0.1);
+        }
+        .fill { height: 100%; width: 100%; background: linear-gradient(90deg, #00f2fe, #f0f); box-shadow: 0 0 15px #0ff; transition: width 0.2s; }
 
-        /* Power Bar */
-        .power-container {
-            width: 200px; height: 15px; background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(0, 255, 255, 0.3); border-radius: 10px; margin-top: 15px;
-            box-shadow: 0 0 15px rgba(0, 255, 255, 0.2); overflow: hidden; position: relative;
-        }
-        .power-fill {
-            height: 100%; width: 50%; background: linear-gradient(90deg, #00f2fe, #4facfe);
-            box-shadow: 0 0 20px #0ff; transition: width 0.3s ease;
-        }
-        .bar-label {
-            position: absolute; top: -18px; left: 0; font-size: 12px; color: #0ff; letter-spacing: 1px;
-        }
-
-        /* Screens */
+        /* Modern Glass Menus */
         .screen {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle at center, rgba(10,0,30,0.8) 0%, #000 100%);
-            backdrop-filter: blur(5px); display: flex; flex-direction: column;
-            justify-content: center; align-items: center; pointer-events: all; z-index: 20;
-            transition: opacity 0.5s;
+            background: rgba(3, 3, 8, 0.9); backdrop-filter: blur(8px);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 20; padding: 30px; text-align: center; transition: opacity 0.4s ease;
         }
-        .hidden { opacity: 0; pointer-events: none; }
+        .hidden { opacity: 0; pointer-events: none; display: none !important; }
         
-        .title {
-            font-family: 'Orbitron', sans-serif; font-size: 45px; text-align: center; line-height: 1.1;
-            background: linear-gradient(to right, #0ff, #f0f); -webkit-background-clip: text; color: transparent;
-            filter: drop-shadow(0 0 15px rgba(255,0,255,0.5)); margin-bottom: 10px;
+        h1 {
+            font-family: 'Orbitron', sans-serif; font-size: 38px; font-weight: 900; letter-spacing: 2px;
+            background: linear-gradient(45deg, #00f2fe, #f0f); -webkit-background-clip: text; color: transparent;
+            margin-bottom: 10px; filter: drop-shadow(0 0 15px rgba(0,242,254,0.4));
         }
-        .subtitle { color: #aaa; font-size: 16px; margin-bottom: 40px; text-align: center; max-width: 80%; }
+        p { color: #6c7280; font-size: 14px; margin-bottom: 30px; line-height: 1.6; max-width: 85%; }
         
-        .neon-btn {
-            background: transparent; border: 2px solid #0ff; color: #0ff;
-            padding: 15px 40px; font-size: 20px; font-family: 'Orbitron', sans-serif;
-            text-transform: uppercase; cursor: pointer; border-radius: 5px;
-            box-shadow: 0 0 15px inset rgba(0,255,255,0.3), 0 0 20px rgba(0,255,255,0.5);
-            transition: all 0.2s; position: relative; overflow: hidden;
+        .btn {
+            background: transparent; border: 2px solid #0ff; color: #0ff; padding: 14px 35px;
+            font-size: 18px; font-family: 'Orbitron', sans-serif; font-weight: 700; text-transform: uppercase;
+            border-radius: 4px; cursor: pointer; box-shadow: 0 0 15px rgba(0,242,254,0.2), inset 0 0 10px rgba(0,242,254,0.2);
+            transition: all 0.2s; width: 80%; max-width: 260px; margin-bottom: 15px;
         }
-        .neon-btn:active { transform: scale(0.95); box-shadow: 0 0 30px inset rgba(0,255,255,0.8), 0 0 40px #0ff; background: rgba(0,255,255,0.2); }
-        .btn-ad { border-color: #f0f; color: #f0f; box-shadow: 0 0 15px inset rgba(255,0,255,0.3), 0 0 20px rgba(255,0,255,0.5); margin-bottom: 15px; }
-
-        canvas { display: block; }
+        .btn:active { transform: scale(0.98); background: rgba(0,242,254,0.1); box-shadow: 0 0 25px #0ff, inset 0 0 15px #0ff; }
+        .btn-ad { border-color: #f0f; color: #f0f; box-shadow: 0 0 15px rgba(240,0,255,0.2), inset 0 0 10px rgba(240,0,255,0.2); }
     </style>
 </head>
 <body>
 
-    <div id="ui-layer">
-        <div class="hud-header">
-            <div class="dev-badge">Developer Burak</div>
-            <div class="score-board">
-                <div class="score-val" id="score">0</div>
-                <div class="rank-val" id="rank">Çaylak Bronz</div>
-            </div>
+<div id="game-container">
+    <div class="hud">
+        <div class="stat-group">
+            <span class="label">RÜTBE</span>
+            <span class="val" id="rank-ui" style="font-size: 18px; color: #cd7f32;">ÇAYLAK BRONZ</span>
         </div>
-        <div style="position: relative; margin-top: 25px;">
-            <div class="bar-label">GLOW UP METRESİ (GÜÇ)</div>
-            <div class="power-container"><div class="power-fill" id="health"></div></div>
+        <div class="stat-group" style="text-align: right;">
+            <span class="label">NET GELİR (XP)</span>
+            <span class="val" id="score-ui">0</span>
         </div>
     </div>
+    
+    <div class="meter-box">
+        <span class="label" style="font-size: 9px;">GLOW UP ENERJİSİ</span>
+        <div class="bar"><div class="fill" id="energy-ui"></div></div>
+    </div>
+
+    <canvas id="canvas"></canvas>
 
     <div id="start-screen" class="screen">
-        <div class="title">GLOW UP<br>RUN</div>
-        <div class="subtitle">Milyon dolarlık vizyon. NPC'leri ez geç, demirleri ağlat!<br><br>👉 EKRANA DOKUNARAK SAĞA/SOLA KAY</div>
-        <button class="neon-btn" onclick="startGame()">Sistemi Başlat</button>
+        <h1>CYBER GLOW</h1>
+        <p>Developer Burak Engine v3.0.<br>Ekrana basılı tutarak yüksel, bırakarak alçal! Engelleri aş ve saf güce ulaş.</p>
+        <button class="btn" onclick="bootSystem()">Sistemi Başlat</button>
     </div>
 
-    <div id="game-over" class="screen hidden">
-        <div class="title" style="font-size: 35px; color: #f00;">SİSTEM ÇÖKTÜ</div>
-        <div class="subtitle" id="death-reason" style="color: #ff4a4a;">Zehirli eski alışkanlıklara yakalandın!</div>
-        <div style="font-size: 24px; color: #0ff; margin-bottom: 30px; font-family: 'Orbitron';">XP: <span id="final-score">0</span></div>
-        <button class="neon-btn btn-ad" onclick="watchAd()">🎬 Reklam İzle & Diril</button>
-        <button class="neon-btn" style="font-size: 16px; padding: 10px 30px;" onclick="startGame()">Yeniden Dene</button>
+    <div id="gameover-screen" class="screen hidden">
+        <h1 style="background: linear-gradient(45deg, #ff0055, #f0f); -webkit-background-clip: text;">ALGORİTMA ÇÖKTÜ</h1>
+        <p>Gereksiz ödem ve eski toksik cache dosyaları motoru kilitledi!</p>
+        <div style="margin-bottom: 25px;">
+            <span class="label">TOPLAM KAZANÇ</span>
+            <div class="val" id="final-score" style="color: #0ff; font-size: 36px;">0</div>
+        </div>
+        <button class="btn btn-ad" onclick="simulateAd()">🎬 REKLAM İZLE ($1.50 KAZAN)</button>
+        <button class="btn" style="font-size: 14px; padding: 8px;" onclick="bootSystem()">Yeniden Başlat</button>
     </div>
-
-    <canvas id="gameCanvas"></canvas>
+</div>
 
 <script>
-    const canvas = document.getElementById('gameCanvas');
+    const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
     
-    // UI Elements
-    const uiScore = document.getElementById('score');
-    const uiRank = document.getElementById('rank');
-    const uiHealth = document.getElementById('health');
+    const scoreUi = document.getElementById('score-ui');
+    const rankUi = document.getElementById('rank-ui');
+    const energyUi = document.getElementById('energy-ui');
     const startScreen = document.getElementById('start-screen');
-    const gameOverScreen = document.getElementById('game-over');
-    
-    let W, H;
-    let gameLoop;
+    const gameoverScreen = document.getElementById('gameover-screen');
+    const finalScore = document.getElementById('final-score');
+
+    let w, h, loopId;
+    let state = 'MENU';
     let frame = 0;
     
-    // Game Variables
-    let state = 'MENU'; // MENU, PLAY, OVER
+    // Game Config
     let score = 0;
-    let health = 50;
-    let speed = 8;
-    let lane = 1; // 0=Left, 1=Center, 2=Right
+    let energy = 100;
+    let gravity = 0.4;
+    let thrust = -7;
+    let speed = 5;
     
-    // Entities
-    let player = { x: 0, y: 0, targetX: 0 };
+    let player = { x: 60, y: 200, vy: 0, radius: 14, isThrusting: false };
     let obstacles = [];
     let particles = [];
-    let gridOffset = 0;
+    let items = [];
 
-    // Resize Canvas
     function resize() {
-        W = canvas.width = window.innerWidth;
-        H = canvas.height = window.innerHeight;
-        player.y = H - 150;
-        updateLane();
+        const box = document.getElementById('game-container');
+        w = canvas.width = box.clientWidth;
+        h = canvas.height = box.clientHeight;
     }
     window.addEventListener('resize', resize);
     resize();
 
-    // Input Handling
-    window.addEventListener('touchstart', handleInput);
-    window.addEventListener('mousedown', handleInput);
-    window.addEventListener('keydown', (e) => {
-        if(state !== 'PLAY') return;
-        if(e.key === 'ArrowLeft' && lane > 0) lane--;
-        if(e.key === 'ArrowRight' && lane < 2) lane++;
-        updateLane();
-    });
+    // Input Listiners
+    const startThrust = () => { player.isThrusting = true; };
+    const endThrust = () => { player.isThrusting = false; };
+    
+    window.addEventListener('mousedown', startThrust);
+    window.addEventListener('mouseup', endThrust);
+    window.addEventListener('touchstart', (e) => { e.preventDefault(); startThrust(); }, {passive: false});
+    window.addEventListener('touchend', endThrust);
 
-    function handleInput(e) {
-        if(state !== 'PLAY') return;
-        let x = e.clientX || (e.touches && e.touches[0].clientX);
-        if(x < W/2 && lane > 0) lane--;
-        if(x >= W/2 && lane < 2) lane++;
-        updateLane();
-    }
-
-    function updateLane() {
-        let laneWidth = W / 3;
-        player.targetX = (lane * laneWidth) + (laneWidth / 2);
-    }
-
-    // Rank Logic (Çaylak Bronz to Elit Kırmızı)
     function checkRank() {
         let r = "Çaylak Bronz", c = "#cd7f32";
         if(score > 200) { r = "Demir Gri"; c = "#aaaaaa"; }
         if(score > 500) { r = "Altın Sarı"; c = "#ffd700"; }
         if(score > 1000) { r = "Elmas Mavi"; c = "#00f2fe"; }
-        if(score > 2000) { r = "Elit Kırmızı"; c = "#ff0055"; speed = 12; } // Speed boost!
-        
-        uiRank.innerText = r;
-        uiRank.style.color = c;
-        uiRank.style.textShadow = `0 0 10px ${c}`;
+        if(score > 2000) { r = "Elit Kırmızı"; c = "#ff0055"; }
+        rankUi.innerText = r; rankUi.style.color = c;
     }
 
-    // Create Explosion
-    function explode(x, y, color) {
-        for(let i=0; i<15; i++) {
+    function spawnParticle(x, y, color) {
+        for(let i=0; i<8; i++) {
             particles.push({
                 x: x, y: y,
-                vx: (Math.random()-0.5)*15, vy: (Math.random()-0.5)*15,
-                life: 1, color: color
+                vx: (Math.random() - 0.5) * 6,
+                vy: (Math.random() - 0.5) * 6,
+                alpha: 1, color: color
             });
         }
     }
 
-    // Game Core
-    function startGame() {
+    function bootSystem() {
         startScreen.classList.add('hidden');
-        gameOverScreen.classList.add('hidden');
-        score = 0; health = 50; speed = 8; lane = 1;
-        obstacles = []; particles = [];
-        updateLane();
-        player.x = player.targetX;
-        state = 'PLAY';
-        uiHealth.style.width = health + '%';
-        checkRank();
-    }
-
-    function watchAd() {
-        // Pseudo-Ad logic
-        alert("💰 Dolar Simülasyonu: Amerika'dan reklam izlendi. +1.50$ hesabına eklendi!");
-        gameOverScreen.classList.add('hidden');
-        health = 100; obstacles = []; // Clear screen
+        gameoverScreen.classList.add('hidden');
+        score = 0; energy = 100; speed = 5;
+        player.y = h / 2; player.vy = 0;
+        obstacles = []; items = []; particles = [];
         state = 'PLAY';
     }
 
-    function die(reason) {
+    function triggerDeath() {
         state = 'OVER';
-        gameOverScreen.classList.remove('hidden');
-        document.getElementById('death-reason').innerText = reason;
-        document.getElementById('final-score').innerText = score;
+        gameoverScreen.classList.remove('hidden');
+        finalScore.innerText = score + " XP";
     }
 
-    // Main Update & Draw Loop
-    function loop() {
-        requestAnimationFrame(loop);
-        
-        // 1. Draw Background (Synthwave Sky & Floor)
-        let skyGradient = ctx.createLinearGradient(0, 0, 0, H/2);
-        skyGradient.addColorStop(0, '#0a0a1a');
-        skyGradient.addColorStop(1, '#2b003b');
-        ctx.fillStyle = skyGradient;
-        ctx.fillRect(0, 0, W, H);
-        
-        // Sun
-        ctx.beginPath();
-        ctx.arc(W/2, H/2, 60, 0, Math.PI*2);
-        ctx.fillStyle = '#ff0055';
-        ctx.shadowBlur = 50; ctx.shadowColor = '#ff0055';
-        ctx.fill(); ctx.shadowBlur = 0;
+    function simulateAd() {
+        alert("💰 Global AdMob Geliri Aktif! ABD CPM Oranından hesabına +$1.50 eklendi. (Simülasyon)");
+        gameoverScreen.classList.add('hidden');
+        energy = 100; obstacles = []; items = [];
+        state = 'PLAY';
+    }
 
-        // Synthwave Moving Grid (Pseudo 3D)
-        ctx.strokeStyle = 'rgba(0, 255, 255, 0.3)';
-        ctx.lineWidth = 2;
-        gridOffset = (gridOffset + speed) % 50;
-        
-        ctx.beginPath();
-        // Horizontal lines
-        for(let i=0; i<H/2; i+=50) {
-            let y = H/2 + i + (gridOffset * (i/100));
-            ctx.moveTo(0, y); ctx.lineTo(W, y);
-        }
-        // Vertical lines
-        let center = W/2;
-        for(let i=-5; i<=5; i++) {
-            ctx.moveTo(center, H/2);
-            ctx.lineTo(center + (i*150), H);
-        }
-        ctx.stroke();
-
-        if(state !== 'PLAY') return;
+    // Engine Core Loops
+    function update() {
+        if (state !== 'PLAY') return;
         frame++;
 
-        // Smooth player movement
-        player.x += (player.targetX - player.x) * 0.2;
+        // Player physics
+        if (player.isThrusting) {
+            player.vy += thrust * 0.12;
+            // Rocket particle tail
+            particles.push({ x: player.x - 10, y: player.y, vx: -Math.random()*4 - 2, vy: (Math.random()-0.5)*2, alpha: 1, color: '#f0f' });
+        }
+        player.vy += gravity;
+        player.y += player.vy;
 
-        // Spawn Entities
-        if(frame % Math.max(20, 45 - Math.floor(speed)) === 0) {
-            let l = Math.floor(Math.random() * 3);
-            let type = Math.random() > 0.4 ? 'good' : 'bad';
+        // Screen boundaries
+        if (player.y - player.radius < 0) { player.y = player.radius; player.vy = 0; }
+        if (player.y + player.radius > h) { triggerDeath(); }
+
+        // Increase speed smoothly
+        if (frame % 500 === 0) speed += 0.5;
+
+        // Spawn obstacles and items
+        if (frame % 90 === 0) {
+            let wallY = Math.random() * (h - 150) + 50;
+            obstacles.push({ x: w + 30, y: wallY, width: 30, height: 100 });
             
-            // Good: Yumurta/Su/Kemik Suyu -- Bad: Sigara/Cips/Wax
-            let emoji = type === 'good' ? ['🥚','🥣','💎'][Math.floor(Math.random()*3)] : ['🚬','🥔','🧴'][Math.floor(Math.random()*3)];
-            let color = type === 'good' ? '#00f2fe' : '#ff0055';
-
-            obstacles.push({
-                x: (l * (W/3)) + (W/6), y: H/2, z: 0.1, // z is for pseudo 3d scaling
-                type: type, emoji: emoji, color: color, lane: l
-            });
+            // Spawn a clean food item next to obstacle
+            items.push({ x: w + 90, y: Math.random() * (h - 60) + 30, collected: false });
         }
 
-        // Update & Draw Entities
-        for(let i = obstacles.length-1; i>=0; i--) {
+        // Move obstacles
+        for (let i = obstacles.length - 1; i >= 0; i--) {
+            obstacles[i].x -= speed;
+            
+            // Collision with wall
             let o = obstacles[i];
-            o.y += speed * o.z * 5; // move down
-            o.z += 0.02; // grow in size
-            o.x = (o.lane * (W/3)) + (W/6); // keep in lane
-
-            // Draw Item
-            ctx.font = Math.floor(30 * o.z) + "px Arial";
-            ctx.textAlign = "center"; ctx.textBaseline = "middle";
-            ctx.shadowBlur = 20; ctx.shadowColor = o.color;
-            ctx.fillText(o.emoji, o.x, o.y);
-            ctx.shadowBlur = 0;
-
-            // Collision Detection
-            if(o.y > player.y - 30 && o.y < player.y + 30 && Math.abs(o.x - player.x) < W/6) {
-                explode(o.x, o.y, o.color);
-                
-                if(o.type === 'good') {
-                    score += 15; health = Math.min(100, health + 5);
-                } else {
-                    health -= 25; // Massive damage for junk
-                    if(health <= 0) die("Toksinler ve ödem seni yavaşlattı!");
-                }
-                
-                uiScore.innerText = score;
-                uiHealth.style.width = health + '%';
-                checkRank();
+            if (player.x + player.radius > o.x && player.x - player.radius < o.x + o.width &&
+                player.y + player.radius > o.y && player.y - player.radius < o.y + o.height) {
+                energy -= 35;
+                spawnParticle(player.x, player.y, '#ff0055');
                 obstacles.splice(i, 1);
+                if (energy <= 0) triggerDeath();
                 continue;
             }
-
-            // Remove off-screen
-            if(o.y > H + 50) obstacles.splice(i, 1);
+            if (o.x < -40) obstacles.splice(i, 1);
         }
 
-        // Update & Draw Particles
-        for(let i = particles.length-1; i>=0; i--) {
-            let p = particles[i];
-            p.x += p.vx; p.y += p.vy; p.life -= 0.05;
-            if(p.life <= 0) { particles.splice(i, 1); continue; }
+        // Move items (Köy yumurtası/özü temsilcisi neon küreler)
+        for (let i = items.length - 1; i >= 0; i--) {
+            items[i].x -= speed;
+            let it = items[i];
             
-            ctx.globalAlpha = p.life;
-            ctx.fillStyle = p.color;
-            ctx.beginPath(); ctx.arc(p.x, p.y, 4, 0, Math.PI*2); ctx.fill();
-            ctx.globalAlpha = 1.0;
+            let d = Math.hypot(player.x - it.x, player.y - it.y);
+            if (d < player.radius + 15) {
+                score += 25;
+                energy = Math.min(100, energy + 10);
+                spawnParticle(it.x, it.y, '#0ff');
+                items.splice(i, 1);
+                scoreUi.innerText = score;
+                checkRank();
+                continue;
+            }
+            if (it.x < -40) items.splice(i, 1);
         }
 
-        // Draw Player (Neon Cyber-Jet / Avatar)
-        ctx.save();
-        ctx.translate(player.x, player.y);
-        
-        // Trail effect
-        ctx.beginPath();
-        ctx.moveTo(0, 0); ctx.lineTo(-15, 60); ctx.lineTo(15, 60);
-        ctx.fillStyle = 'rgba(0, 242, 254, 0.3)';
-        ctx.fill();
+        // Update particles
+        for (let i = particles.length - 1; i >= 0; i--) {
+            particles[i].x += particles[i].vx;
+            particles[i].y += particles[i].vy;
+            particles[i].alpha -= 0.04;
+            if (particles[i].alpha <= 0) particles.splice(i, 1);
+        }
 
-        // Ship / Player Body
-        ctx.beginPath();
-        ctx.moveTo(0, -25); // Nose
-        ctx.lineTo(20, 20); // Right Wing
-        ctx.lineTo(0, 10);  // Center Engine
-        ctx.lineTo(-20, 20); // Left Wing
-        ctx.closePath();
-        
-        ctx.fillStyle = '#050505';
-        ctx.fill();
-        ctx.lineWidth = 3;
-        ctx.strokeStyle = '#00f2fe';
-        ctx.shadowBlur = 20; ctx.shadowColor = '#00f2fe';
-        ctx.stroke();
-        
-        // Engine Glow
-        ctx.beginPath(); ctx.arc(0, 15, 8 + Math.random()*4, 0, Math.PI*2);
-        ctx.fillStyle = '#f0f'; ctx.shadowColor = '#f0f'; ctx.fill();
-        
-        ctx.restore();
+        energyUi.style.width = energy + '%';
     }
 
-    // Start Engine
-    requestAnimationFrame(loop);
+    function draw() {
+        // Dark premium workspace background
+        ctx.fillStyle = '#030308';
+        ctx.fillRect(0, 0, w, h);
+
+        // Tech Grid lines
+        ctx.strokeStyle = 'rgba(0, 242, 254, 0.02)';
+        ctx.lineWidth = 1;
+        for(let i=0; i<w; i+=40) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, h); ctx.stroke(); }
+        for(let i=0; i<h; i+=40) { ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(w, i); ctx.stroke(); }
+
+        if (state !== 'PLAY' && state !== 'OVER') return;
+
+        // Draw items (Neon Blue Orbs)
+        items.forEach(it => {
+            ctx.shadowBlur = 15; ctx.shadowColor = '#00f2fe';
+            ctx.fillStyle = '#00f2fe';
+            ctx.beginPath(); ctx.arc(it.x, it.y, 8, 0, Math.PI*2); ctx.fill();
+            ctx.shadowBlur = 0;
+        });
+
+        // Draw obstacles (Neon Pink Warning Walls)
+        obstacles.forEach(o => {
+            ctx.shadowBlur = 10; ctx.shadowColor = '#ff0055';
+            ctx.fillStyle = 'rgba(255, 0, 85, 0.2)';
+            ctx.fillRect(o.x, o.y, o.width, o.height);
+            ctx.strokeStyle = '#ff0055';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(o.x, o.y, o.width, o.height);
+            ctx.shadowBlur = 0;
+        });
+
+        // Draw particles
+        particles.forEach(p => {
+            ctx.save(); ctx.globalAlpha = p.alpha; ctx.fillStyle = p.color;
+            ctx.beginPath(); ctx.arc(p.x, p.y, 3, 0, Math.PI*2); ctx.fill(); ctx.restore();
+        });
+
+        // Draw Player (The Cyber Core Alpha)
+        ctx.shadowBlur = 20; ctx.shadowColor = '#00f2fe';
+        let grad = ctx.createRadialGradient(player.x, player.y, 2, player.x, player.y, player.radius);
+        grad.addColorStop(0, '#fff');
+        grad.addColorStop(0.4, '#00f2fe');
+        grad.addColorStop(1, '#f0f');
+        ctx.fillStyle = grad;
+        ctx.beginPath(); ctx.arc(player.x, player.y, player.radius, 0, Math.PI*2); ctx.fill();
+        ctx.shadowBlur = 0;
+    }
+
+    function runEngine() {
+        update();
+        draw();
+        requestAnimationFrame(runEngine);
+    }
+    requestAnimationFrame(runEngine);
 </script>
 </body>
 </html>
