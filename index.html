@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SQUAD WARFARE: BURAK v3.0</title>
+    <title>CYBER SOCCER 2026: BURAK ENGINE</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@600;700&display=swap');
         
@@ -12,111 +12,102 @@
         
         #game-container {
             position: relative; width: 100%; height: 100%; max-width: 800px; margin: 0 auto;
-            background: #223; overflow: hidden; border: 3px solid #334;
+            background: #1a3311; overflow: hidden; border: 4px solid #2a4d1a;
         }
         
-        canvas { display: block; width: 100%; height: 100%; background: #1e2514; } /* Çimen/Savaş alanı rengi */
+        canvas { display: block; width: 100%; height: 100%; }
         
-        /* Gelişmiş Savaş HUD */
-        .top-bar {
+        /* Skor Tablosu HUD */
+        .score-board {
             position: absolute; top: 0; left: 0; width: 100%; padding: 15px;
             pointer-events: none; z-index: 10; display: flex; justify-content: space-between;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.8), rgba(0,0,0,0));
+            background: linear-gradient(to bottom, rgba(0,0,0,0.7), rgba(0,0,0,0));
         }
-        .team-score { font-family: 'Orbitron', sans-serif; font-size: 18px; font-weight: 900; }
-        .blue-t { color: #00f2fe; text-shadow: 0 0 10px #00f2fe; }
-        .red-t { color: #ff0055; text-shadow: 0 0 10px #ff0055; }
+        .score-text { font-family: 'Orbitron', sans-serif; font-size: 20px; font-weight: 900; }
+        .blue-team { color: #00f2fe; text-shadow: 0 0 10px #00f2fe; }
+        .red-team { color: #ff0055; text-shadow: 0 0 10px #ff0055; }
         
-        /* Skill Butonları (Mobile Uygun) */
-        .skill-bar {
-            position: absolute; bottom: 20px; right: 20px; z-index: 10;
-            display: flex; gap: 10px; pointer-events: auto;
+        /* Şut Butonu */
+        .shoot-zone {
+            position: absolute; bottom: 20px; right: 20px; z-index: 10; pointer-events: auto;
         }
-        .skill-btn {
-            width: 60px; height: 60px; background: rgba(0,0,0,0.6); border: 2px solid #fff;
-            border-radius: 50%; color: #fff; font-family: 'Orbitron', sans-serif;
-            font-size: 10px; font-weight: bold; display: flex; justify-content: center;
-            align-items: center; flex-direction: column; cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5); transition: transform 0.1s;
+        .shoot-btn {
+            width: 75px; height: 75px; background: linear-gradient(135deg, #ffd700, #ff8800);
+            border: 3px solid #fff; border-radius: 50%; color: #fff; font-family: 'Orbitron', sans-serif;
+            font-size: 14px; font-weight: bold; display: flex; justify-content: center;
+            align-items: center; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            transition: transform 0.1s;
         }
-        .skill-btn:active { transform: scale(0.9); }
-        #s1 { border-color: #00f2fe; box-shadow: 0 0 15px rgba(0,242,254,0.4); }
-        #s2 { border-color: #f0f; box-shadow: 0 0 15px rgba(240,0,255,0.4); }
-        #s3 { border-color: #ffd700; box-shadow: 0 0 15px rgba(255,215,0,0.4); }
+        .shoot-btn:active { transform: scale(0.9); }
 
-        /* Mobil Joystick Alanı */
-        .joystick-container {
+        /* Mobil Joystick */
+        .joy-zone {
             position: absolute; bottom: 20px; left: 20px; z-index: 10;
             width: 100px; height: 100px; background: rgba(255,255,255,0.05);
             border: 2px dashed rgba(255,255,255,0.2); border-radius: 50%;
             display: flex; justify-content: center; align-items: center; pointer-events: auto;
         }
-        .joystick-knob {
-            width: 40px; height: 40px; background: #fff; border-radius: 50%;
-            box-shadow: 0 0 10px rgba(255,255,255,0.8); transition: transform 0.05s;
-        }
+        .joy-knob { width: 40px; height: 40px; background: #fff; border-radius: 50%; box-shadow: 0 0 10px #fff; }
 
         /* Ekranlar */
         .screen {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(10, 10, 20, 0.95); display: flex; flex-direction: column;
+            background: rgba(10, 25, 10, 0.95); display: flex; flex-direction: column;
             justify-content: center; align-items: center; z-index: 20; color: #fff; text-align: center;
         }
         .hidden { display: none !important; }
         .btn {
-            background: #ff0055; color: #fff; border: none; padding: 12px 30px;
+            background: #00ff66; color: #000; border: none; padding: 12px 35px;
             font-family: 'Orbitron', sans-serif; font-weight: bold; border-radius: 5px;
-            cursor: pointer; box-shadow: 0 0 15px #ff0055; margin-top: 20px;
+            cursor: pointer; box-shadow: 0 0 15px #00ff66; margin-top: 20px; text-transform: uppercase;
         }
     </style>
 </head>
 <body>
 
 <div id="game-container">
-    <div class="top-bar">
+    <div class="score-board">
         <div>
-            <span class="blue-t" id="player-tag">BURAK_V3.0 (Leader)</span><br>
-            <span style="color: #aaa; font-size: 12px;">Rütbe: </span><span id="rank-hud" style="color: #cd7f32; font-weight: bold;">Çaylak Bronz</span>
+            <span class="blue-team" id="dev-tag">BURAK FC (Developer)</span><br>
+            <span style="color: #ccc; font-size: 12px;">Rütbe: </span><span id="rank-hud" style="color: #cd7f32; font-weight: bold;">Çaylak Bronz</span>
         </div>
-        <div class="team-score">
-            <span class="blue-t" id="blue-score">MAVİ: 0</span> 
-            <span style="color: #fff;">|</span> 
-            <span class="red-t" id="red-score">KIRMIZI: 0</span>
+        <div class="score-text">
+            <span class="blue-team" id="b-score">MAVİ: 0</span> 
+            <span style="color: #fff;">-</span> 
+            <span class="red-team" id="r-score">KIRMIZI: 0</span>
         </div>
     </div>
 
-    <div class="joystick-container" id="joyZone">
-        <div class="joystick-knob" id="joyKnob"></div>
+    <div class="joy-zone" id="joyZone">
+        <div class="joy-knob" id="joyKnob"></div>
     </div>
 
-    <div class="skill-bar">
-        <div class="skill-btn" id="s1" onclick="castSkill(1)"><span>SKILL 1</span><span style="font-size: 8px; color: #0ff;">Mızrak</span></div>
-        <div class="skill-btn" id="s2" onclick="castSkill(2)"><span>SKILL 2</span><span style="font-size: 8px; color: #f0f;">Katliam</span></div>
-        <div class="skill-btn" id="s3" onclick="castSkill(3)"><span>ULTI</span><span style="font-size: 8px; color: #ffd700;">Patlama</span></div>
+    <div class="shoot-zone">
+        <div class="shoot-btn" onclick="shootBall()">ŞUT!</div>
     </div>
 
-    <canvas id="battleCanvas"></canvas>
+    <canvas id="fieldCanvas"></canvas>
 
     <div id="start-screen" class="screen">
-        <h1 style="font-family: 'Orbitron', sans-serif; color: #00f2fe; text-shadow: 0 0 15px #00f2fe;">SQUAD WARFARE</h1>
-        <p style="color: #aaa; max-width: 80%; margin-top: 10px;">Mavi takımın lideri Sensin! Sol alttaki joystick ile hareket et, sağ alttaki yeteneklerle kırmızı takımı yok et!</p>
-        <button class="btn" onclick="startBattle()">Savaşa Gir</button>
+        <h1 style="font-family: 'Orbitron', sans-serif; color: #00ff66; text-shadow: 0 0 15px #00ff66;">CYBER SOCCER</h1>
+        <p style="color: #ccc; max-width: 80%; margin-top: 10px;">Dairenle topa dokunarak topu sür! Rakip sana çarparsa topu çalar. Sağ alttaki büyük butonla veya PC'de 'BOŞLUK' (Space) tuşuyla rakip kaleye golünü at!</p>
+        <button class="btn" onclick="kickOff()">Maçı Başlat</button>
     </div>
 </div>
 
 <script>
-    const canvas = document.getElementById('battleCanvas');
+    const canvas = document.getElementById('fieldCanvas');
     const ctx = canvas.getContext('2d');
     
     let w, h, state = 'MENU';
-    let blueKills = 0, redKills = 0, playerXP = 0;
+    let blueScore = 0, redScore = 0, matchXP = 0;
     
-    let player = { x: 100, y: 200, r: 15, speed: 3.5, hp: 100, maxHp: 100, team: 'blue', targetX: 100, targetY: 200 };
-    let entities = []; // Tüm botlar ve takım arkadaşları buraya gelecek
-    let projectiles = [];
-    let damageNumbers = [];
+    // Oyun Objeleri Mimarisi
+    let player = { x: 150, y: 250, r: 18, speed: 4, team: 'blue', id: 'Burak_v3.0' };
+    let ball = { x: 400, y: 250, r: 10, vx: 0, vy: 0, friction: 0.98, holder: null };
+    let entities = []; // Takım arkadaşları ve düşman botlar
+    let goalTextTimer = 0;
 
-    // Harita Boyut Ayarı
     function resize() {
         const container = document.getElementById('game-container');
         w = canvas.width = container.clientWidth;
@@ -125,10 +116,10 @@
     window.addEventListener('resize', resize);
     resize();
 
-    // Mobil Joystick Kontrolü
+    // Mobil Joystick Yapılandırması
     const joyZone = document.getElementById('joyZone');
     const joyKnob = document.getElementById('joyKnob');
-    let moveVector = { x: 0, y: 0 };
+    let moveVec = { x: 0, y: 0 };
 
     joyZone.addEventListener('touchmove', (e) => {
         e.preventDefault();
@@ -137,51 +128,50 @@
         const cy = rect.top + rect.height / 2;
         let tx = e.touches[0].clientX - cx;
         let ty = e.touches[0].clientY - cy;
-        let dist = Math.hypot(tx, ty);
-        if(dist > 35) { tx = (tx/dist)*35; ty = (ty/dist)*35; }
+        let d = Math.hypot(tx, ty);
+        if(d > 35) { tx = (tx/d)*35; ty = (ty/d)*35; }
         joyKnob.style.transform = `translate(${tx}px, ${ty}px)`;
-        moveVector.x = tx / 35;
-        moveVector.y = ty / 35;
+        moveVec.x = tx / 35; moveVec.y = ty / 35;
     });
     joyZone.addEventListener('touchend', () => {
         joyKnob.style.transform = 'translate(0px, 0px)';
-        moveVector = { x: 0, y: 0 };
+        moveVec = { x: 0, y: 0 };
     });
 
-    // Klavye Desteği (PC Testleri İçin)
+    // Klavye Desteği
     window.addEventListener('keydown', (e) => {
-        if(e.key === 'w' || e.key === 'ArrowUp') moveVector.y = -1;
-        if(e.key === 's' || e.key === 'ArrowDown') moveVector.y = 1;
-        if(e.key === 'a' || e.key === 'ArrowLeft') moveVector.x = -1;
-        if(e.key === 'd' || e.key === 'ArrowRight') moveVector.x = 1;
-        if(e.key === '1') castSkill(1);
-        if(e.key === '2') castSkill(2);
-        if(e.key === '3') castSkill(3);
+        if(e.key === 'w' || e.key === 'ArrowUp') moveVec.y = -1;
+        if(e.key === 's' || e.key === 'ArrowDown') moveVec.y = 1;
+        if(e.key === 'a' || e.key === 'ArrowLeft') moveVec.x = -1;
+        if(e.key === 'd' || e.key === 'ArrowRight') moveVec.x = 1;
+        if(e.key === ' ' || e.key === 'Spacebar') shootBall();
     });
-    window.addEventListener('keyup', () => { moveVector = { x: 0, y: 0 }; });
+    window.addEventListener('keyup', () => { moveVec = { x: 0, y: 0 }; });
 
-    // Botları Dünyaya Bırakma Algoritması
-    function spawnBots() {
+    function setupPlayers() {
         entities = [];
-        // Mavi Takım Arkadaşları (Sarı/Yeşil İsimli Can cana dostlar)
-        entities.push({ id: 'Alpha_Sigma_USA', x: 80, y: 100, r: 14, hp: 100, team: 'blue', speed: 2 });
-        entities.push({ id: 'Clean_Lucifer', x: 80, y: 300, r: 14, hp: 100, team: 'blue', speed: 2 });
-        
-        // Kırmızı Takım (Düşman Botlar)
-        entities.push({ id: 'Düşman_X', x: 650, y: 100, r: 14, hp: 120, team: 'red', speed: 1.8 });
-        entities.push({ id: 'Düşman_Y', x: 650, y: 200, r: 14, hp: 120, team: 'red', speed: 1.8 });
-        entities.push({ id: 'Düşman_Z', x: 650, y: 350, r: 14, hp: 120, team: 'red', speed: 1.8 });
+        // Mavi Takım Arkadaşı (Yapay Zeka)
+        entities.push({ id: 'Alpha_USA', x: 200, y: 120, r: 18, team: 'blue', speed: 2.2 });
+        // Kırmızı Takım Düşman Botları
+        entities.push({ id: 'Rakip_1', x: 600, y: 150, r: 18, team: 'red', speed: 2.3 });
+        entities.push({ id: 'Rakip_2', x: 550, y: 350, r: 18, team: 'red', speed: 2.3 });
     }
 
-    function startBattle() {
+    function resetPositions() {
+        player.x = 150; player.y = h / 2;
+        ball.x = w / 2; ball.y = h / 2;
+        ball.vx = 0; ball.vy = 0; ball.holder = null;
+        setupPlayers();
+    }
+
+    function kickOff() {
         document.getElementById('start-screen').classList.add('hidden');
-        blueKills = 0; redKills = 0; playerXP = 0;
-        player.x = 100; player.y = h/2; player.hp = 100;
-        spawnBots();
+        blueScore = 0; redScore = 0; matchXP = 0;
+        resetPositions();
         state = 'PLAY';
     }
 
-    function checkRank(xp) {
+    function checkRankSystem(xp) {
         let r = "Çaylak Bronz", c = "#cd7f32";
         if(xp > 200) { r = "Demir Gri"; c = "#aaaaaa"; }
         if(xp > 500) { r = "Altın Sarı"; c = "#ffd700"; }
@@ -191,201 +181,195 @@
         rHud.innerText = r; rHud.style.color = c;
     }
 
-    // Yetenekleri Tetikleme Motoru
-    function castSkill(type) {
-        if (state !== 'PLAY' || player.hp <= 0) return;
+    // Şut Çekme Motoru
+    function shootBall() {
+        if (state !== 'PLAY') return;
         
-        if (type === 1) { // Düz Işın Mızrağı
-            projectiles.push({ x: player.x, y: player.y, vx: 8, vy: 0, r: 6, color: '#00f2fe', damage: 35, team: 'blue' });
+        // Eğer top bendeyse kaleye doğru fırlat
+        if (ball.holder === player) {
+            ball.holder = null;
+            ball.vx = 12; // Sağdaki rakip kaleye doğru hız vektörü fırlatır
+            ball.vy = (Math.random() - 0.5) * 4; // Hafif kavis
+            matchXP += 10; checkRankSystem(matchXP);
         }
-        if (type === 2) { // Çift Yönlü Katliam Dalgası
-            projectiles.push({ x: player.x, y: player.y, vx: 6, vy: 4, r: 8, color: '#f0f', damage: 45, team: 'blue' });
-            projectiles.push({ x: player.x, y: player.y, vx: 6, vy: -4, r: 8, color: '#f0f', damage: 45, team: 'blue' });
-        }
-        if (type === 3) { // Alan Etkili Devasa Ulti Patlaması
-            entities.forEach(e => {
-                if (e.team === 'red') {
-                    let d = Math.hypot(e.x - player.x, e.y - player.y);
-                    if (dist < 180) { // Yakındaki her düşmana dev hasar
-                        e.hp -= 70;
-                        damageNumbers.push({ x: e.x, y: e.y - 15, text: '70 CRITICAL!', color: '#ffd700', timer: 40 });
-                    }
-                }
-            });
-            // Ulti Efekt Halkası
-            damageNumbers.push({ x: player.x, y: player.y, text: '💥 ULTIMATE', color: '#ffd700', timer: 30 });
-        }
+        
+        // Eğer top kendi botundaysa pas veya şut algoritmasını tetikle
+        entities.forEach(b => {
+            if (b.team === 'blue' && ball.holder === b) {
+                ball.holder = null;
+                ball.vx = 10;
+                ball.vy = (player.y - b.y) * 0.05; // Oyuncuya doğru pas atar
+            }
+        });
     }
 
-    // Savaş Döngüsü Ana Hesaplamaları (Engine Frame)
+    // Savaş/Maç Döngüsü Hesaplamaları
     function update() {
         if (state !== 'PLAY') return;
 
         // 1. Oyuncu Hareketi
-        player.x += moveVector.x * player.speed;
-        player.y += moveVector.y * player.speed;
-        
-        // Sınır kontrolleri
+        player.x += moveVec.x * player.speed;
+        player.y += moveVec.y * player.speed;
         player.x = Math.max(player.r, Math.min(w - player.r, player.x));
         player.y = Math.max(player.r, Math.min(h - player.r, player.y));
 
-        // 2. Yapay Zekalı Takım Arkadaşları ve Düşman Botların Savaş Mantığı
+        // 2. Botların Yapay Zeka Koşulları
         entities.forEach(bot => {
-            if (bot.hp <= 0) return;
-
-            // Kendine en yakın zıt takımdaki hedefi bulma algoritmaları
-            let target = (bot.team === 'blue') ? player : null; 
-            let minDist = 9999;
-
-            if (bot.team === 'red') {
-                // Kırmızılar oyuncuya veya mavi botlara saldırır
-                let dToP = Math.hypot(player.x - bot.x, player.y - bot.y);
-                if (dToP < minDist && player.hp > 0) { minDist = dToP; target = player; }
-                
-                entities.forEach(b => {
-                    if (b.team === 'blue' && b.hp > 0) {
-                        let d = Math.hypot(b.x - bot.x, b.y - bot.y);
-                        if (d < minDist) { minDist = d; target = b; }
+            if (ball.holder === bot) {
+                // Eğer top kırmızılardaysa sol taraftaki mavi kaleye doğru sürerler
+                if (bot.team === 'red') {
+                    bot.x -= bot.speed;
+                    bot.y += (h/2 - bot.y) * 0.02; // Kaleye doğru yönelme
+                    if (bot.x < 120 && Math.random() < 0.05) { // Şut çekme şansı
+                        ball.holder = null;
+                        ball.vx = -11; ball.vy = (h/2 - bot.y) * 0.1;
                     }
-                });
+                } else {
+                    // Mavi bot topu kaparsa ileri sürer
+                    bot.x += bot.speed;
+                    if (bot.x > w - 150) shootBall();
+                }
             } else {
-                // Mavi botlar kırmızı botları hedefler
-                entities.forEach(r => {
-                    if (r.team === 'red' && r.hp > 0) {
-                        let d = Math.hypot(r.x - bot.x, r.y - bot.y);
-                        if (d < minDist) { minDist = d; target = r; }
-                    }
-                });
+                // Top boşta veya başkasındaysa topa doğru koşma algoritması
+                if (ball.holder !== bot) {
+                    let angle = Math.atan2(ball.y - bot.y, ball.x - bot.x);
+                    bot.x += Math.cos(angle) * bot.speed;
+                    bot.y += Math.sin(angle) * bot.speed;
+                }
             }
+            bot.x = Math.max(bot.r, Math.min(w - bot.r, bot.x));
+            bot.y = Math.max(bot.r, Math.min(h - bot.r, bot.y));
+        });
 
-            // Hedefe doğru akıllıca yürüme ve otomatik düz vuruş fırlatma
-            if (target) {
-                let angle = Math.atan2(target.y - bot.y, target.x - bot.x);
-                bot.x += Math.cos(angle) * bot.speed;
-                bot.y += Math.sin(angle) * bot.speed;
+        // 3. Topun Fizik ve Sahiplik Algoritması
+        if (ball.holder) {
+            // Top birine yapışmışsa onun önünde gitsin
+            let hld = ball.holder;
+            let offset = hld.team === 'blue' ? hld.r + 5 : -(hld.r + 5);
+            ball.x = hld.x + offset;
+            ball.y = hld.y;
+            ball.vx = 0; ball.vy = 0;
+        } else {
+            // Top boştaysa fizik kurallarına göre yuvarlansın
+            ball.x += ball.vx;
+            ball.y += ball.vy;
+            ball.vx *= ball.friction;
+            ball.vy *= ball.friction;
 
-                // Belirli aralıklarla ateş etme (Auto-attack)
-                if (Math.random() < 0.015) {
-                    projectiles.push({
-                        x: bot.x, y: bot.y,
-                        vx: Math.cos(angle) * 5,
-                        vy: Math.sin(angle) * 5,
-                        r: 4, color: bot.team === 'blue' ? '#00f2fe' : '#ff0055',
-                        damage: 12, team: bot.team
-                    });
+            // Saha kenarlarından sekme fizikleri
+            if (ball.y - ball.r < 0) { ball.y = ball.r; ball.vy *= -1; }
+            if (ball.y + ball.r > h) { ball.y = h - ball.r; ball.vy *= -1; }
+            if (ball.x - ball.r < 0 && (ball.y < h/3 || ball.y > (h/3)*2)) { ball.x = ball.r; ball.vx *= -1; }
+            if (ball.x + ball.r > w && (ball.y < h/3 || ball.y > (h/3)*2)) { ball.x = w - ball.r; ball.vx *= -1; }
+        }
+
+        // 4. Dokunma / Top Çalma Temas Algoritması
+        // Oyuncu topa değerse topu kapar
+        if (ball.holder !== player) {
+            let d = Math.hypot(player.x - ball.x, player.y - ball.y);
+            if (d < player.r + ball.r) ball.holder = player;
+        }
+
+        // Botların topa dokunma ve top çalma durumları
+        entities.forEach(bot => {
+            if (ball.holder !== bot) {
+                let d = Math.hypot(bot.x - ball.x, bot.y - ball.y);
+                if (d < bot.r + ball.r) {
+                    // Eğer top karşı takımdaysa çalma mekaniği tetiklenir
+                    ball.holder = bot;
+                }
+            }
+            // İkili mücadele: Bot oyuncuya çarparsa topu çalabilir
+            if (ball.holder === player) {
+                let dToP = Math.hypot(bot.x - player.x, bot.y - player.y);
+                if (dToP < bot.r + player.r && bot.team === 'red' && Math.random() < 0.03) {
+                    ball.holder = bot; // Kırmızı bot topu Burak'tan çaldı!
                 }
             }
         });
 
-        // 3. Mermilerin Çarpışma Testleri
-        for (let i = projectiles.length - 1; i >= 0; i--) {
-            let p = projectiles[i];
-            p.x += p.vx; p.y += p.vy;
+        // 5. GOL ÇİZGİSİ KONTROLLERİ (Sol ve Sağ Kaleler)
+        let goalHeightTop = h / 3;
+        let goalHeightBottom = (h / 3) * 2;
 
-            // Ekrandan çıkan mermileri temizle
-            if (p.x < 0 || p.x > w || p.y < 0 || p.y > h) { projectiles.splice(i, 1); continue; }
-
-            // Oyuncuya çarpma kontrolü
-            if (p.team === 'red' && player.hp > 0) {
-                if (Math.hypot(player.x - p.x, player.y - p.y) < player.r + p.r) {
-                    player.hp -= p.damage;
-                    damageNumbers.push({ x: player.x, y: player.y - 10, text: '-' + p.damage, color: '#ff0055', timer: 30 });
-                    projectiles.splice(i, 1);
-                    if (player.hp <= 0) { redKills++; document.getElementById('red-score').innerText = "KIRMIZI: " + redKills; setTimeout(startBattle, 3000); }
-                    continue;
-                }
-            }
-
-            // Botlara çarpma kontrolü
-            for (let j = 0; j < entities.length; j++) {
-                let bot = entities[j];
-                if (bot.hp > 0 && bot.team !== p.team) {
-                    if (Math.hypot(bot.x - p.x, bot.y - p.y) < bot.r + p.r) {
-                        bot.hp -= p.damage;
-                        damageNumbers.push({ x: bot.x, y: bot.y - 10, text: '-' + p.damage, color: p.team === 'blue' ? '#00f2fe' : '#ff0055', timer: 30 });
-                        projectiles.splice(i, 1);
-                        
-                        if (bot.hp <= 0) {
-                            if (p.team === 'blue') {
-                                blueKills++;
-                                playerXP += 75;
-                                document.getElementById('blue-score').innerText = "MAVİ: " + blueKills;
-                                checkRank(playerXP);
-                            } else {
-                                redKills++;
-                                document.getElementById('red-score').innerText = "KIRMIZI: " + redKills;
-                            }
-                            // Ölen botu canlandır (Respawn sistemi)
-                            setTimeout(() => { bot.hp = 100; bot.x = bot.team === 'blue' ? 50 : w-50; }, 4000);
-                        }
-                        break;
-                    }
-                }
-            }
+        // Sağ Kale (Mavi Takımın Gol Atacağı Yer)
+        if (ball.x > w - 10 && ball.y > goalHeightTop && ball.y < goalHeightBottom) {
+            blueScore++;
+            matchXP += 150; // Gol atmak devasa XP verir!
+            document.getElementById('b-score').innerText = "MAVİ: " + blueScore;
+            checkRankSystem(matchXP);
+            goalTextTimer = 60;
+            state = 'GOAL_BREAK';
+            setTimeout(() => { state = 'PLAY'; resetPositions(); }, 2000);
         }
 
-        // Hasar yazılarının ömrünü azaltma
-        for (let i = damageNumbers.length - 1; i >= 0; i--) {
-            damageNumbers[i].timer--;
-            damageNumbers[i].y -= 0.5;
-            if (damageNumbers[i].timer <= 0) damageNumbers.splice(i, 1);
+        // Sol Kale (Kırmızı Takımın Gol Atacağı Yer)
+        if (ball.x < 10 && ball.y > goalHeightTop && ball.y < goalHeightBottom) {
+            redScore++;
+            document.getElementById('r-score').innerText = "KIRMIZI: " + redScore;
+            goalTextTimer = 60;
+            state = 'GOAL_BREAK';
+            setTimeout(() => { state = 'PLAY'; resetPositions(); }, 2000);
         }
     }
 
-    // Grafik Çizim Motoru (Draw Frame)
+    // Grafik Çizim Fabrikası (Canvas Katmanı)
     function draw() {
         ctx.clearRect(0, 0, w, h);
 
-        // Savaş Meydanı Çizgileri / Taktik Grid Alanı
-        ctx.strokeStyle = 'rgba(255,255,255,0.03)';
-        for(let i=0; i<w; i+=50) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, h); ctx.stroke(); }
+        // 1. FUTBOL SAHASI ÇİZGİLERİ
+        ctx.fillStyle = '#1e3d11'; // Canlı yeşil saha çimi
+        ctx.fillRect(0, 0, w, h);
+        
+        ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+        ctx.lineWidth = 3;
+        // Orta saha çizgisi ve yuvarlağı
+        ctx.beginPath(); ctx.moveTo(w/2, 0); ctx.lineTo(w/2, h); ctx.stroke();
+        ctx.beginPath(); ctx.arc(w/2, h/2, 60, 0, Math.PI*2); ctx.stroke();
 
-        if (state !== 'PLAY') return;
+        // Sol ve Sağ Kale Direkleri Çizimi
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(0, h/3, 10, (h/3)*1);
+        ctx.fillRect(w-10, h/3, 10, (h/3)*1);
 
-        // 1. Oyuncunun Çizimi (Burak_v3.0 - Yeşil/Mavi Karakter)
-        if (player.hp > 0) {
-            ctx.fillStyle = '#00f2fe';
-            ctx.beginPath(); ctx.arc(player.x, player.y, player.r, 0, Math.PI*2); ctx.fill();
-            // Can barı
-            ctx.fillStyle = '#00ff66';
-            ctx.fillRect(player.x - 20, player.y - 25, (player.hp / player.maxHp) * 40, 5);
-        }
+        if (state !== 'PLAY' && state !== 'GOAL_BREAK') return;
 
-        // 2. Botların Çizimi
+        // 2. OYUNCU (BURAK) ÇİZİMİ
+        ctx.fillStyle = '#00f2fe'; // Parlak mavi oyuncu takımı
+        ctx.beginPath(); ctx.arc(player.x, player.y, player.r, 0, Math.PI*2); ctx.fill();
+        ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+        ctx.fillStyle = '#fff'; ctx.font = 'bold 11px Orbitron'; ctx.textAlign = 'center';
+        ctx.fillText(player.id, player.x, player.y - 24);
+
+        // 3. BOTLARIN ÇİZİMİ
         entities.forEach(bot => {
-            if (bot.hp <= 0) return;
-            ctx.fillStyle = bot.team === 'blue' ? '#00ff66' : '#ff0055';
+            ctx.fillStyle = bot.team === 'blue' ? '#00b3ff' : '#ff0055';
             ctx.beginPath(); ctx.arc(bot.x, bot.y, bot.r, 0, Math.PI*2); ctx.fill();
-            
-            // İsim etiketleri
-            ctx.fillStyle = '#fff'; ctx.font = '10px Rajdhani'; ctx.textAlign = 'center';
-            ctx.fillText(bot.id, bot.x, bot.y - 28);
-
-            // Can barları
-            ctx.fillStyle = '#ff0000'; ctx.fillRect(bot.x - 15, bot.y - 20, 30, 4);
-            ctx.fillStyle = bot.team === 'blue' ? '#00ff66' : '#ffea00';
-            ctx.fillRect(bot.x - 15, bot.y - 20, (bot.hp / (bot.team === 'blue' ? 100 : 120)) * 30, 4);
+            ctx.strokeStyle = '#fff'; ctx.lineWidth = 1; ctx.stroke();
+            ctx.fillStyle = '#fff'; ctx.font = '10px Rajdhani';
+            ctx.fillText(bot.id, bot.x, bot.y - 22);
         });
 
-        // 3. Mermilerin Çizimi
-        projectiles.forEach(p => {
-            ctx.fillStyle = p.color;
-            ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2); ctx.fill();
-        });
+        // 4. TOP ÇİZİMİ
+        ctx.fillStyle = '#ffea00'; // Parlak sarı top
+        ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI*2); ctx.fill();
+        ctx.strokeStyle = '#000'; ctx.stroke();
 
-        // 4. Uçan Hasar Sayılarının Çizimi
-        damageNumbers.forEach(d => {
-            ctx.fillStyle = d.color; ctx.font = 'bold 12px Orbitron'; ctx.textAlign = 'center';
-            ctx.fillText(d.text, d.x, d.y);
-        });
+        // Gol Atıldığında Ekranda Çıkacak Yazı Animasyonu
+        if (state === 'GOAL_BREAK') {
+            ctx.fillStyle = '#ffd700';
+            ctx.font = 'bold 48px Orbitron';
+            ctx.textAlign = 'center';
+            ctx.fillText('GOOOOLL!!', w/2, h/2 - 20);
+        }
     }
 
-    function engineLoop() {
+    function gamePipeline() {
         update();
         draw();
-        requestAnimationFrame(engineLoop);
+        requestAnimationFrame(gamePipeline);
     }
-    requestAnimationFrame(engineLoop);
+    requestAnimationFrame(gamePipeline);
 </script>
 </body>
 </html>
