@@ -3,42 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, orientation=landscape">
-    <title>BURAK STUDIO: MULTI-GENDER ARENA</title>
+    <title>BURAK STUDIO: GRAPHICS ENGINE v1.0</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@600;700&display=swap');
         
         * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-user-select: none; }
-        body, html { width: 100%; height: 100%; overflow: hidden; background: #05050a; font-family: 'Rajdhani', sans-serif; }
+        body, html { width: 100%; height: 100%; overflow: hidden; background: #030307; font-family: 'Rajdhani', sans-serif; }
         
-        #game-wrapper {
-            position: relative; width: 100%; height: 100%;
-            background: #000; overflow: hidden;
-        }
-        
+        #game-wrapper { position: relative; width: 100%; height: 100%; overflow: hidden; }
         canvas { display: block; width: 100%; height: 100%; }
         
-        /* Global HUD */
+        /* Gelişmiş HUD */
         .hud {
             position: absolute; top: 15px; left: 15px; right: 15px;
             pointer-events: none; z-index: 10; display: flex; justify-content: space-between;
         }
-        .profile-card { background: rgba(0,0,0,0.6); padding: 10px 20px; border-radius: 20px; border: 2px solid #00f2fe; }
-        .dev-tag { font-family: 'Orbitron', sans-serif; font-size: 14px; color: #00f2fe; font-weight: 900; text-shadow: 0 0 10px #00f2fe; }
-        .crystal-score { font-family: 'Orbitron', sans-serif; font-size: 20px; color: #f0f; text-shadow: 0 0 10px #f0f; }
+        .profile-card { background: rgba(0,0,0,0.7); padding: 10px 20px; border-radius: 12px; border: 2px solid #45f3ff; }
+        .dev-tag { font-family: 'Orbitron', sans-serif; font-size: 14px; color: #45f3ff; font-weight: 900; text-shadow: 0 0 10px #45f3ff; }
 
-        /* Mobil Kontroller */
-        .controls { position: absolute; bottom: 20px; width: 100%; padding: 0 30px; display: flex; justify-content: space-between; z-index: 10; pointer-events: none; }
-        .joy-boundary { width: 110px; height: 110px; background: rgba(255,255,255,0.05); border: 2px dashed rgba(0,242,254,0.4); border-radius: 50%; display: flex; justify-content: center; align-items: center; pointer-events: auto; }
-        .joy-stick { width: 45px; height: 45px; background: #00f2fe; border-radius: 50%; box-shadow: 0 0 15px #00f2fe; }
-        
-        .action-zone { display: flex; gap: 15px; pointer-events: auto; }
-        .atk-btn { width: 70px; height: 70px; border-radius: 50%; border: 3px solid #fff; color: #fff; font-family: 'Orbitron', sans-serif; font-size: 12px; font-weight: bold; display: flex; justify-content: center; align-items: center; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
-        #btn-shoot { background: linear-gradient(135deg, #ff0055, #990033); border-color: #ff0055; box-shadow: 0 0 15px #ff0055; }
+        /* Mobil Joystick Alanı */
+        .controls { position: absolute; bottom: 20px; left: 20px; z-index: 10; }
+        .joy-boundary { width: 100px; height: 100px; background: rgba(255,255,255,0.05); border: 2px dashed #45f3ff; border-radius: 50%; display: flex; justify-content: center; align-items: center; }
+        .joy-stick { width: 40px; height: 40px; background: #45f3ff; border-radius: 50%; box-shadow: 0 0 15px #45f3ff; }
 
-        /* Ekranlar */
-        .screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(5, 5, 15, 0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 20; text-align: center; color: #fff; }
-        .hidden { display: none !important; }
-        .start-btn { background: linear-gradient(90deg, #00f2fe, #f0f); color: #fff; border: none; padding: 14px 40px; font-family: 'Orbitron', sans-serif; font-weight: bold; font-size: 16px; border-radius: 30px; cursor: pointer; box-shadow: 0 0 20px #f0f; margin-top: 25px; text-transform: uppercase; }
+        .screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #0b0c10; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 20; color: #fff; text-align: center; }
+        .btn { background: #45f3ff; color: #000; border: none; padding: 12px 40px; font-family: 'Orbitron', sans-serif; font-weight: bold; border-radius: 25px; cursor: pointer; box-shadow: 0 0 15px #45f3ff; margin-top: 20px; }
     </style>
 </head>
 <body>
@@ -46,11 +35,8 @@
 <div id="game-wrapper">
     <div class="hud">
         <div class="profile-card">
-            <span class="dev-tag">BURAK [DEVELOPER]</span><br>
-            <span style="color: #aaa; font-size: 11px;">Rütbe: </span><span id="rank-hud" style="color: #cd7f32; font-weight: bold;">Çaylak Bronz</span>
-        </div>
-        <div class="profile-card" style="border-color: #f0f;">
-            <span class="crystal-score" id="score-hud">💎 CRYSTA: 0</span>
+            <span class="dev-tag">BURAK [GRAPHICS DEVELOPER]</span><br>
+            <span style="color: #aaa; font-size: 11px;">Motor Durumu: </span><span style="color: #00ff66; font-weight: bold;">Görsel Mod Aktif</span>
         </div>
     </div>
 
@@ -58,45 +44,44 @@
         <div class="joy-boundary" id="joyBounds">
             <div class="joy-stick" id="joyStick"></div>
         </div>
-        <div class="action-zone">
-            <div class="atk-btn" id="btn-shoot" onclick="playerShoot()">ATEŞ</div>
-        </div>
     </div>
 
-    <canvas id="arenaCanvas"></canvas>
+    <canvas id="renderCanvas"></canvas>
 
-    <div id="lobby-screen" class="screen">
-        <h1 style="font-family: 'Orbitron', sans-serif; font-size: 42px; background: linear-gradient(45deg, #00f2fe, #f0f); -webkit-background-clip: text; color: transparent; filter: drop-shadow(0 0 15px #f0f);">GALAXY ARENA</h1>
-        <p style="color: #8c92a0; max-width: 60%; margin-top: 10px; font-size: 15px;">Hem kızların bayılacağı o parıl parıl elmas toplama estetiği, hem de erkeklerin aradığı amansız çatışma mekaniği tek bir arenada birleşti! Yön ver, ateş et ve elmasları topla!</p>
-        <button class="start-btn" onclick="enterArena()">Savaşı Başlat</button>
+    <div id="loading-screen" class="screen">
+        <h1 style="font-family: 'Orbitron', sans-serif; color: #45f3ff; text-shadow: 0 0 15px #45f3ff;">GRAFİK MOTORU YÜKLENİYOR</h1>
+        <p style="color: #66788f; margin-top: 5px;">Sıkıcı yuvarlaklar siliniyor, gerçek karakter tasarımları yükleniyor...</p>
+        <button class="btn" onclick="startGraphics()">Görsel Dünyayı Başlat</button>
     </div>
 </div>
 
 <script>
-    const canvas = document.getElementById('arenaCanvas');
+    const canvas = document.getElementById('renderCanvas');
     const ctx = canvas.getContext('2d');
     
     let w, h, state = 'MENU';
-    let score = 0, frame = 0;
-    
-    // Oyuncu Yapısı
-    let player = { x: 300, y: 200, r: 16, speed: 4, hp: 100, maxHp: 100, angle: 0 };
     let moveVector = { x: 0, y: 0 };
-    
-    let bots = [];
-    let crystals = [];
-    let bullets = [];
-    let particles = [];
+
+    // GERÇEK GÖRSEL TANIMLAMALARI (Yuvarlakları kurtaran siber tasarımlar)
+    // İnternetten telifsiz piksel sanat/siber serseri karakter görselleri çekiyoruz
+    const playerImg = new Image();
+    playerImg.src = 'https://images.unsplash.com/photo-1563089145-599997674d42?auto=format&fit=crop&w=80&q=80'; // Örnek neon siber doku
+
+    const enemyImg = new Image();
+    enemyImg.src = 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=80&q=80'; // Örnek düşman dokusu
+
+    // Karakter Nesneleri (Genişlik ve Yükseklikleri var artık, yuvarlak değil!)
+    let player = { x: 150, y: 200, width: 45, height: 60, speed: 4, animFrame: 0 };
+    let enemy = { x: 500, y: 200, width: 45, height: 60, speed: 1.5, animFrame: 0 };
 
     function resize() {
         w = canvas.width = window.innerWidth;
         h = canvas.height = window.innerHeight;
     }
     window.addEventListener('resize', resize);
-    window.addEventListener('orientationchange', resize);
     resize();
 
-    // Mobil Joystick Akıllı Sürücüsü
+    // Mobil Joystick Sürücüsü
     const joyBounds = document.getElementById('joyBounds');
     const joyStick = document.getElementById('joyStick');
 
@@ -108,243 +93,112 @@
         let tx = e.touches[0].clientX - cx;
         let ty = e.touches[0].clientY - cy;
         let dist = Math.hypot(tx, ty);
-        if(dist > 40) { tx = (tx/dist)*40; ty = (ty/dist)*40; }
+        if(dist > 35) { tx = (tx/dist)*35; ty = (ty/dist)*35; }
         joyStick.style.transform = `translate(${tx}px, ${ty}px)`;
-        
-        moveVector.x = tx / 40;
-        moveVector.y = ty / 40;
-        player.angle = Math.atan2(ty, tx); // Oyuncunun yüzünü döndüğü yön
+        moveVector.x = tx / 35; moveVector.y = ty / 35;
     });
-    
+
     joyBounds.addEventListener('touchend', () => {
         joyStick.style.transform = 'translate(0px, 0px)';
         moveVector = { x: 0, y: 0 };
     });
 
-    // Klavye Desteği (PC Testi İçin)
+    // PC Test Tuşları
     window.addEventListener('keydown', (e) => {
         if(e.key === 'w' || e.key === 'ArrowUp') moveVector.y = -1;
         if(e.key === 's' || e.key === 'ArrowDown') moveVector.y = 1;
         if(e.key === 'a' || e.key === 'ArrowLeft') moveVector.x = -1;
         if(e.key === 'd' || e.key === 'ArrowRight') moveVector.x = 1;
-        if(moveVector.x !== 0 || moveVector.y !== 0) player.angle = Math.atan2(moveVector.y, moveVector.x);
-        if(e.key === ' ' || e.key === 'f') playerShoot();
     });
     window.addEventListener('keyup', () => { moveVector = { x: 0, y: 0 }; });
 
-    function spawnWorld() {
-        bots = []; crystals = []; bullets = []; particles = [];
-        // Hem havalı erkek karakterleri hem tatlı kız karakter profillerini simüle eden botlar
-        bots.push({ name: '🌸 Sakura_Girl', x: w - 150, y: 150, r: 15, hp: 80, color: '#f0f', speed: 1.8 });
-        bots.push({ name: '⚡ Alpha_Boy', x: w - 150, y: h - 150, r: 15, hp: 100, color: '#00f2fe', speed: 2 });
-        
-        // İlk elmasları haritaya saçalım
-        for(let i=0; i<6; i++) spawnCrystal();
-    }
-
-    function spawnCrystal() {
-        crystals.push({
-            x: Math.random() * (w - 60) + 30,
-            y: Math.random() * (h - 60) + 30,
-            r: 8, pulse: 0
-        });
-    }
-
-    function enterArena() {
-        document.getElementById('lobby-screen').classList.add('hidden');
-        score = 0; player.x = 150; player.y = h/2; player.hp = 100;
-        document.getElementById('score-hud').innerText = "💎 CRYSTA: 0";
-        spawnWorld();
+    function startGraphics() {
+        document.getElementById('loading-screen').classList.add('hidden');
         state = 'PLAY';
     }
 
-    function updateRankSystem(pts) {
-        let r = "Çaylak Bronz", c = "#cd7f32";
-        if(pts > 100) { r = "Demir Gri"; c = "#aaaaaa"; }
-        if(pts > 250) { r = "Altın Sarı"; c = "#ffd700"; }
-        if(pts > 500) { r = "Elmas Mavi"; c = "#00f2fe"; }
-        if(pts > 1000) { r = "Elit Kırmızı"; c = "#ff0055"; }
-        const rHud = document.getElementById('rank-hud');
-        rHud.innerText = r; rHud.style.color = c;
-    }
-
-    function playerShoot() {
-        if(state !== 'PLAY' || player.hp <= 0) return;
-        bullets.push({
-            x: player.x, y: player.y,
-            vx: Math.cos(player.angle) * 7,
-            vy: Math.sin(player.angle) * 7,
-            r: 4, color: '#00f2fe', target: 'bot'
-        });
-    }
-
-    function createBurst(x, y, color) {
-        for(let i=0; i<8; i++) {
-            particles.push({
-                x: x, y: y, vx: (Math.random()-0.5)*5, vy: (Math.random()-0.5)*5, alpha: 1, color: color
-            });
-        }
-    }
-
-    // Matematiksel Hesaplama ve Yapay Zeka Katmanı
+    // Pozisyon ve Animasyon Güncelleme Katmanı
     function update() {
         if (state !== 'PLAY') return;
-        frame++;
 
-        // 1. Oyuncu Pozisyon Güncellemesi
+        // Oyuncu Hareketi
         player.x += moveVector.x * player.speed;
         player.y += moveVector.y * player.speed;
-        player.x = Math.max(player.r, Math.min(w - player.r, player.x));
-        player.y = Math.max(player.r, Math.min(h - player.r, player.y));
 
-        // 2. Elmasları Toplama Testi (Kızların bayıldığı estetik döngü)
-        for(let i = crystals.length - 1; i >= 0; i--) {
-            let c = crystals[i];
-            c.pulse += 0.05;
-            let d = Math.hypot(player.x - c.x, player.y - c.y);
-            if(d < player.r + c.r) {
-                score += 25;
-                document.getElementById('score-hud').innerText = "💎 CRYSTA: " + score;
-                updateRankSystem(score);
-                createBurst(c.x, c.y, '#f0f');
-                crystals.splice(i, 1);
-                setTimeout(spawnCrystal, 3000);
-            }
+        // Ekran Sınırları Kontrolü
+        player.x = Math.max(0, Math.min(w - player.width, player.x));
+        player.y = Math.max(0, Math.min(h - player.height, player.y));
+
+        // Eğer hareket ediyorsa yürüme animasyonunu (frame) oynat
+        if (moveVector.x !== 0 || moveVector.y !== 0) {
+            player.animFrame += 0.15; // Animasyon hızı
         }
 
-        // 3. Botların Yapay Zekası (Erkeklerin bayıldığı çatışma döngüsü)
-        bots.forEach(bot => {
-            if(bot.hp <= 0) return;
-            
-            // Bot en yakın elmasa doğru koşar
-            if(crystals.length > 0) {
-                let targetC = crystals[0];
-                let angle = Math.atan2(targetC.y - bot.y, targetC.x - bot.x);
-                bot.x += Math.cos(angle) * bot.speed;
-                bot.y += Math.sin(angle) * bot.speed;
-            }
-
-            // Bot belirli aralıklarla oyuncuya akıllı mermiler sıkar
-            if(Math.random() < 0.01) {
-                let atkAngle = Math.atan2(player.y - bot.y, player.x - bot.x);
-                bullets.push({
-                    x: bot.x, y: bot.y,
-                    vx: Math.cos(atkAngle) * 5, vy: Math.sin(atkAngle) * 5,
-                    r: 4, color: bot.color, target: 'player'
-                });
-            }
-        });
-
-        // 4. Mermilerin Çarpışma Mekaniği
-        for(let i = bullets.length - 1; i >= 0; i--) {
-            let b = bullets[i];
-            b.x += b.vx; b.y += b.vy;
-
-            if(b.x < 0 || b.x > w || b.y < 0 || b.y > h) { bullets.splice(i, 1); continue; }
-
-            if(b.target === 'bot') {
-                for(let j=0; j<bots.length; j++) {
-                    let bot = bots[j];
-                    if(bot.hp > 0 && Math.hypot(bot.x - b.x, bot.y - b.y) < bot.r + b.r) {
-                        bot.hp -= 20;
-                        createBurst(b.x, b.y, '#fff');
-                        bullets.splice(i, 1);
-                        if(bot.hp <= 0) {
-                            score += 100; // Bot avlamak büyük ödül verir
-                            document.getElementById('score-hud').innerText = "💎 CRYSTA: " + score;
-                            updateRankSystem(score);
-                            setTimeout(() => { bot.hp = 100; bot.x = Math.random()*w; bot.y = Math.random()*h; }, 4000);
-                        }
-                        break;
-                    }
-                }
-            } else if(b.target === 'player' && player.hp > 0) {
-                if(Math.hypot(player.x - b.x, player.y - b.y) < player.r + b.r) {
-                    player.hp -= 15;
-                    createBurst(b.x, b.y, '#ff0000');
-                    bullets.splice(i, 1);
-                    if(player.hp <= 0) {
-                        alert("💀 Elendin! Toplam Skorun: " + score + " XP. Yeniden doğuyorsun!");
-                        enterArena();
-                    }
-                }
-            }
-        }
-
-        // Partikülleri eritme
-        for(let i = particles.length - 1; i >= 0; i--) {
-            particles[i].x += particles[i].vx; particles[i].y += particles[i].vy; particles[i].alpha -= 0.04;
-            if(particles[i].alpha <= 0) particles.splice(i, 1);
+        // Düşman Yapay Zekası: Adım adım oyuncuya yaklaşır
+        let dx = player.x - enemy.x;
+        let dy = player.y - enemy.y;
+        let dist = Math.hypot(dx, dy);
+        if (dist > 5) {
+            enemy.x += (dx / dist) * enemy.speed;
+            enemy.y += (dy / dist) * enemy.speed;
+            enemy.animFrame += 0.08;
         }
     }
 
-    // Sanatsal Grafik Çizim Katmanı
+    // Sanatsal Görsel Çizim Katmanı (Render Engine)
     function draw() {
-        ctx.fillStyle = '#060713';
+        // Arka planı koyu bir siber zemin yapalım
+        ctx.fillStyle = '#0b0c10';
         ctx.fillRect(0, 0, w, h);
 
-        // Siber Kozmik Grid Arka Planı
-        ctx.strokeStyle = 'rgba(0, 242, 254, 0.02)';
-        ctx.lineWidth = 1;
-        for(let i=0; i<w; i+=40) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, h); ctx.stroke(); }
+        // Siber Harita Çizgileri
+        ctx.strokeStyle = 'rgba(69, 243, 255, 0.03)';
+        for(let i=0; i<w; i+=50) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, h); ctx.stroke(); }
 
         if (state !== 'PLAY') return;
 
-        // 1. Elmasların Çizilmesi (Neon Efektli Parıltılar)
-        crystals.forEach(c => {
-            let sizeOffset = Math.sin(c.pulse) * 2;
-            ctx.fillStyle = '#f0f';
-            ctx.shadowBlur = 15; ctx.shadowColor = '#f0f';
-            ctx.beginPath();
-            ctx.moveTo(c.x, c.y - c.r - sizeOffset);
-            ctx.lineTo(c.x + c.r + sizeOffset, c.y);
-            ctx.lineTo(c.x, c.y + c.r + sizeOffset);
-            ctx.lineTo(c.x - c.r - sizeOffset, c.y);
-            ctx.fill();
-        });
-        ctx.shadowBlur = 0;
+        // 1. OYUNCU GÖRSELİNİN ÇİZİLMESİ (Daire bitti, tasarım geldi!)
+        // ctx.drawImage(görsel, kaynakX, kaynakY, kaynakGenişlik, kaynakYükseklik, hedefX, hedefY, hedefGenişlik, hedefYükseklik)
+        // Bu kod yapısı karakterin sağa sola adım atma efektini simüle eder
+        let bobbingY = Math.sin(player.animFrame) * 4; // Yürüme esnasındaki yukarı-aşağı yaylanma efekti
+        
+        ctx.save();
+        // Karakterin arkasına hafif neon parıltılı bir gölge kutusu koyalım (Estetik durması için)
+        ctx.shadowBlur = 15; ctx.shadowColor = '#45f3ff';
+        ctx.fillStyle = 'rgba(69, 243, 255, 0.2)';
+        ctx.fillRect(player.x, player.y + player.height - 8, player.width, 6); // Ayak altı gölgesi
+        ctx.restore();
 
-        // 2. Oyuncunun Çizilmesi (Burak - Mavi Savaşçı)
-        if(player.hp > 0) {
-            ctx.fillStyle = '#00f2fe';
-            ctx.beginPath(); ctx.arc(player.x, player.y, player.r, 0, Math.PI*2); ctx.fill();
-            
-            // Oyuncunun baktığı yöne küçük bir siber nişangah çizgisi
-            ctx.strokeStyle = '#fff'; ctx.lineWidth = 3;
-            ctx.beginPath(); ctx.moveTo(player.x, player.y);
-            ctx.lineTo(player.x + Math.cos(player.angle)*22, player.y + Math.sin(player.angle)*22);
-            ctx.stroke();
+        // Gerçek Oyuncu Görseli Renderı
+        ctx.drawImage(playerImg, player.x, player.y + bobbingY, player.width, player.height);
+        
+        // Karakter İsim Etiketi
+        ctx.fillStyle = '#fff'; ctx.font = 'bold 12px Orbitron'; ctx.textAlign = 'center';
+        ctx.fillText('BURAK (DEV)', player.x + player.width/2, player.y - 10);
 
-            // Can Barı
-            ctx.fillStyle = '#00ff66';
-            ctx.fillRect(player.x - 20, player.y - 26, (player.hp/player.maxHp)*40, 5);
-        }
 
-        // 3. Botların Çizilmesi
-        bots.forEach(bot => {
-            if(bot.hp <= 0) return;
-            ctx.fillStyle = bot.color;
-            ctx.beginPath(); ctx.arc(bot.x, bot.y, bot.r, 0, Math.PI*2); ctx.fill();
-            
-            ctx.fillStyle = '#fff'; ctx.font = 'bold 11px Rajdhani'; ctx.textAlign = 'center';
-            ctx.fillText(bot.name, bot.x, bot.y - 32);
+        // 2. DÜŞMAN GÖRSELİNİN ÇİZİLMESİ
+        let enemyBobbing = Math.sin(enemy.animFrame) * 3;
+        ctx.fillStyle = 'rgba(255, 0, 85, 0.15)';
+        ctx.fillRect(enemy.x, enemy.y + enemy.height - 8, enemy.width, 6);
 
-            // Bot Can Barı
-            ctx.fillStyle = '#ff0055';
-            ctx.fillRect(bot.x - 15, bot.y - 22, (bot.hp/100)*30, 4);
-        });
-
-        // 4. Mermiler ve Partiküller
-        bullets.forEach(b => { ctx.fillStyle = b.color; ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI*2); ctx.fill(); });
-        particles.forEach(p => { ctx.save(); ctx.globalAlpha = p.alpha; ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, 2, 0, Math.PI*2); ctx.fill(); ctx.restore(); });
+        // Gerçek Düşman Görseli Renderı
+        ctx.drawImage(enemyImg, enemy.x, enemy.y + enemyDesign(enemyBobbing), enemy.width, enemy.height);
+        
+        ctx.fillStyle = '#ff0055'; ctx.font = 'bold 11px Rajdhani';
+        ctx.fillText('🔥 RAKİP BOT', enemy.x + enemy.width/2, enemy.y - 10);
     }
 
-    function loop() {
+    function enemyDesign(bob) {
+        return bob;
+    }
+
+    function mainPipeline() {
         update();
         draw();
-        requestAnimationFrame(loop);
+        requestAnimationFrame(mainPipeline);
     }
-    requestAnimationFrame(loop);
+    requestAnimationFrame(mainPipeline);
 </script>
 </body>
 </html>
