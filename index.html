@@ -2,203 +2,129 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, orientation=landscape">
-    <title>BURAK STUDIO: GRAPHICS ENGINE v1.0</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Link Tree</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@600;700&display=swap');
-        
-        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-user-select: none; }
-        body, html { width: 100%; height: 100%; overflow: hidden; background: #030307; font-family: 'Rajdhani', sans-serif; }
-        
-        #game-wrapper { position: relative; width: 100%; height: 100%; overflow: hidden; }
-        canvas { display: block; width: 100%; height: 100%; }
-        
-        /* Gelişmiş HUD */
-        .hud {
-            position: absolute; top: 15px; left: 15px; right: 15px;
-            pointer-events: none; z-index: 10; display: flex; justify-content: space-between;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        .profile-card { background: rgba(0,0,0,0.7); padding: 10px 20px; border-radius: 12px; border: 2px solid #45f3ff; }
-        .dev-tag { font-family: 'Orbitron', sans-serif; font-size: 14px; color: #45f3ff; font-weight: 900; text-shadow: 0 0 10px #45f3ff; }
 
-        /* Mobil Joystick Alanı */
-        .controls { position: absolute; bottom: 20px; left: 20px; z-index: 10; }
-        .joy-boundary { width: 100px; height: 100px; background: rgba(255,255,255,0.05); border: 2px dashed #45f3ff; border-radius: 50%; display: flex; justify-content: center; align-items: center; }
-        .joy-stick { width: 40px; height: 40px; background: #45f3ff; border-radius: 50%; box-shadow: 0 0 15px #45f3ff; }
+        body {
+            /* Görseldeki gibi yukarıdan aşağıya doğru açılan gradyan arka plan */
+            background: linear-gradient(180deg, #2b9393 0%, #114565 50%, #07162c 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+            color: white;
+        }
 
-        .screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #0b0c10; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 20; color: #fff; text-align: center; }
-        .btn { background: #45f3ff; color: #000; border: none; padding: 12px 40px; font-family: 'Orbitron', sans-serif; font-weight: bold; border-radius: 25px; cursor: pointer; box-shadow: 0 0 15px #45f3ff; margin-top: 20px; }
+        /* Üst Başlık Alanı */
+        .header-area {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        /* Kutuların Toplandığı Ana Alan */
+        .links-container {
+            width: 100%;
+            max-width: 520px; /* Mobil ve web için ideal ekran genişliği */
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* Link Kutusu Tasarımı */
+        .link-card {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: white;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        /* Kutuya dokununca veya mouse ile üzerine gelince efekt */
+        .link-card:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* ImgBB'den Gelecek Resim Alanı */
+        .card-img {
+            width: 65px;
+            height: 65px;
+            border-radius: 8px;
+            object-fit: cover; /* Resmin kutuya tam sığmasını ve bozulmamasını sağlar */
+            background-color: rgba(255, 255, 255, 0.1); /* Resim linki yokken boş duracak alan */
+            flex-shrink: 0;
+        }
+
+        /* Ortadaki Yazı Alanı */
+        .card-text {
+            flex-grow: 1;
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: 500;
+            padding: 0 15px;
+        }
+
+        /* Sağ taraftaki Üç Nokta Seçenek Simgesi */
+        .card-options {
+            font-size: 1.2rem;
+            opacity: 0.5;
+            padding-right: 5px;
+        }
     </style>
 </head>
 <body>
 
-<div id="game-wrapper">
-    <div class="hud">
-        <div class="profile-card">
-            <span class="dev-tag">BURAK [GRAPHICS DEVELOPER]</span><br>
-            <span style="color: #aaa; font-size: 11px;">Motor Durumu: </span><span style="color: #00ff66; font-weight: bold;">Görsel Mod Aktif</span>
-        </div>
+    <div class="header-area">
+        <h1 class="header-title">God Level ♀ 👁</h1>
     </div>
 
-    <div class="controls">
-        <div class="joy-boundary" id="joyBounds">
-            <div class="joy-stick" id="joyStick"></div>
-        </div>
+    <div class="links-container">
+
+        <a href="GİDİLECEK_SİTE_LİNKİ_1" target="_blank" class="link-card">
+            <img class="card-img" src="IMGBB_RESİM_LİNKİ_BURAYA_1" alt="">
+            <div class="card-text">Kutu Metni 1</div>
+            <div class="card-options">⋮</div>
+        </a>
+
+        <a href="GİDİLECEK_SİTE_LİNKİ_2" target="_blank" class="link-card">
+            <img class="card-img" src="IMGBB_RESİM_LİNKİ_BURAYA_2" alt="">
+            <div class="card-text">Kutu Metni 2</div>
+            <div class="card-options">⋮</div>
+        </a>
+
+        <a href="GİDİLECEK_SİTE_LİNKİ_3" target="_blank" class="link-card">
+            <img class="card-img" src="IMGBB_RESİM_LİNKİ_BURAYA_3" alt="">
+            <div class="card-text">Kutu Metni 3</div>
+            <div class="card-options">⋮</div>
+        </a>
+
+        <a href="GİDİLECEK_SİTE_LİNKİ_4" target="_blank" class="link-card">
+            <img class="card-img" src="IMGBB_RESİM_LİNKİ_BURAYA_4" alt="">
+            <div class="card-text">Kutu Metni 4</div>
+            <div class="card-options">⋮</div>
+        </a>
+
     </div>
 
-    <canvas id="renderCanvas"></canvas>
-
-    <div id="loading-screen" class="screen">
-        <h1 style="font-family: 'Orbitron', sans-serif; color: #45f3ff; text-shadow: 0 0 15px #45f3ff;">GRAFİK MOTORU YÜKLENİYOR</h1>
-        <p style="color: #66788f; margin-top: 5px;">Sıkıcı yuvarlaklar siliniyor, gerçek karakter tasarımları yükleniyor...</p>
-        <button class="btn" onclick="startGraphics()">Görsel Dünyayı Başlat</button>
-    </div>
-</div>
-
-<script>
-    const canvas = document.getElementById('renderCanvas');
-    const ctx = canvas.getContext('2d');
-    
-    let w, h, state = 'MENU';
-    let moveVector = { x: 0, y: 0 };
-
-    // GERÇEK GÖRSEL TANIMLAMALARI (Yuvarlakları kurtaran siber tasarımlar)
-    // İnternetten telifsiz piksel sanat/siber serseri karakter görselleri çekiyoruz
-    const playerImg = new Image();
-    playerImg.src = 'https://images.unsplash.com/photo-1563089145-599997674d42?auto=format&fit=crop&w=80&q=80'; // Örnek neon siber doku
-
-    const enemyImg = new Image();
-    enemyImg.src = 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=80&q=80'; // Örnek düşman dokusu
-
-    // Karakter Nesneleri (Genişlik ve Yükseklikleri var artık, yuvarlak değil!)
-    let player = { x: 150, y: 200, width: 45, height: 60, speed: 4, animFrame: 0 };
-    let enemy = { x: 500, y: 200, width: 45, height: 60, speed: 1.5, animFrame: 0 };
-
-    function resize() {
-        w = canvas.width = window.innerWidth;
-        h = canvas.height = window.innerHeight;
-    }
-    window.addEventListener('resize', resize);
-    resize();
-
-    // Mobil Joystick Sürücüsü
-    const joyBounds = document.getElementById('joyBounds');
-    const joyStick = document.getElementById('joyStick');
-
-    joyBounds.addEventListener('touchmove', (e) => {
-        e.preventDefault();
-        const rect = joyBounds.getBoundingClientRect();
-        const cx = rect.left + rect.width / 2;
-        const cy = rect.top + rect.height / 2;
-        let tx = e.touches[0].clientX - cx;
-        let ty = e.touches[0].clientY - cy;
-        let dist = Math.hypot(tx, ty);
-        if(dist > 35) { tx = (tx/dist)*35; ty = (ty/dist)*35; }
-        joyStick.style.transform = `translate(${tx}px, ${ty}px)`;
-        moveVector.x = tx / 35; moveVector.y = ty / 35;
-    });
-
-    joyBounds.addEventListener('touchend', () => {
-        joyStick.style.transform = 'translate(0px, 0px)';
-        moveVector = { x: 0, y: 0 };
-    });
-
-    // PC Test Tuşları
-    window.addEventListener('keydown', (e) => {
-        if(e.key === 'w' || e.key === 'ArrowUp') moveVector.y = -1;
-        if(e.key === 's' || e.key === 'ArrowDown') moveVector.y = 1;
-        if(e.key === 'a' || e.key === 'ArrowLeft') moveVector.x = -1;
-        if(e.key === 'd' || e.key === 'ArrowRight') moveVector.x = 1;
-    });
-    window.addEventListener('keyup', () => { moveVector = { x: 0, y: 0 }; });
-
-    function startGraphics() {
-        document.getElementById('loading-screen').classList.add('hidden');
-        state = 'PLAY';
-    }
-
-    // Pozisyon ve Animasyon Güncelleme Katmanı
-    function update() {
-        if (state !== 'PLAY') return;
-
-        // Oyuncu Hareketi
-        player.x += moveVector.x * player.speed;
-        player.y += moveVector.y * player.speed;
-
-        // Ekran Sınırları Kontrolü
-        player.x = Math.max(0, Math.min(w - player.width, player.x));
-        player.y = Math.max(0, Math.min(h - player.height, player.y));
-
-        // Eğer hareket ediyorsa yürüme animasyonunu (frame) oynat
-        if (moveVector.x !== 0 || moveVector.y !== 0) {
-            player.animFrame += 0.15; // Animasyon hızı
-        }
-
-        // Düşman Yapay Zekası: Adım adım oyuncuya yaklaşır
-        let dx = player.x - enemy.x;
-        let dy = player.y - enemy.y;
-        let dist = Math.hypot(dx, dy);
-        if (dist > 5) {
-            enemy.x += (dx / dist) * enemy.speed;
-            enemy.y += (dy / dist) * enemy.speed;
-            enemy.animFrame += 0.08;
-        }
-    }
-
-    // Sanatsal Görsel Çizim Katmanı (Render Engine)
-    function draw() {
-        // Arka planı koyu bir siber zemin yapalım
-        ctx.fillStyle = '#0b0c10';
-        ctx.fillRect(0, 0, w, h);
-
-        // Siber Harita Çizgileri
-        ctx.strokeStyle = 'rgba(69, 243, 255, 0.03)';
-        for(let i=0; i<w; i+=50) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, h); ctx.stroke(); }
-
-        if (state !== 'PLAY') return;
-
-        // 1. OYUNCU GÖRSELİNİN ÇİZİLMESİ (Daire bitti, tasarım geldi!)
-        // ctx.drawImage(görsel, kaynakX, kaynakY, kaynakGenişlik, kaynakYükseklik, hedefX, hedefY, hedefGenişlik, hedefYükseklik)
-        // Bu kod yapısı karakterin sağa sola adım atma efektini simüle eder
-        let bobbingY = Math.sin(player.animFrame) * 4; // Yürüme esnasındaki yukarı-aşağı yaylanma efekti
-        
-        ctx.save();
-        // Karakterin arkasına hafif neon parıltılı bir gölge kutusu koyalım (Estetik durması için)
-        ctx.shadowBlur = 15; ctx.shadowColor = '#45f3ff';
-        ctx.fillStyle = 'rgba(69, 243, 255, 0.2)';
-        ctx.fillRect(player.x, player.y + player.height - 8, player.width, 6); // Ayak altı gölgesi
-        ctx.restore();
-
-        // Gerçek Oyuncu Görseli Renderı
-        ctx.drawImage(playerImg, player.x, player.y + bobbingY, player.width, player.height);
-        
-        // Karakter İsim Etiketi
-        ctx.fillStyle = '#fff'; ctx.font = 'bold 12px Orbitron'; ctx.textAlign = 'center';
-        ctx.fillText('BURAK (DEV)', player.x + player.width/2, player.y - 10);
-
-
-        // 2. DÜŞMAN GÖRSELİNİN ÇİZİLMESİ
-        let enemyBobbing = Math.sin(enemy.animFrame) * 3;
-        ctx.fillStyle = 'rgba(255, 0, 85, 0.15)';
-        ctx.fillRect(enemy.x, enemy.y + enemy.height - 8, enemy.width, 6);
-
-        // Gerçek Düşman Görseli Renderı
-        ctx.drawImage(enemyImg, enemy.x, enemy.y + enemyDesign(enemyBobbing), enemy.width, enemy.height);
-        
-        ctx.fillStyle = '#ff0055'; ctx.font = 'bold 11px Rajdhani';
-        ctx.fillText('🔥 RAKİP BOT', enemy.x + enemy.width/2, enemy.y - 10);
-    }
-
-    function enemyDesign(bob) {
-        return bob;
-    }
-
-    function mainPipeline() {
-        update();
-        draw();
-        requestAnimationFrame(mainPipeline);
-    }
-    requestAnimationFrame(mainPipeline);
-</script>
 </body>
 </html>
