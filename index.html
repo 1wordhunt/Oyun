@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIP Link Tree</title>
+    <title>God Level | Lucifer Michaelson</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         * {
             margin: 0;
@@ -13,7 +14,7 @@
         }
 
         body {
-            /* Harika koyu arka plan resmi */
+            /* Koyu Gece Arka Planı */
             background: url('https://i.ibb.co/84LyD71M/46fe29e1c6c79fa24dd869901611441e.jpg') no-repeat center center fixed;
             background-size: cover;
             min-height: 100vh;
@@ -126,15 +127,41 @@
             opacity: 0.8;
         }
 
-        /* ======================================================= */
-        /* SÜPER DETAY SAYFASI (POPUP PENCERE ESPRİSİ)              */
-        /* ======================================================= */
+        /* Alt Sosyal Medya Alanı */
+        .social-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 22px;
+            margin-top: 50px;
+            margin-bottom: 20px;
+            z-index: 2;
+            flex-wrap: wrap;
+            max-width: 520px;
+            width: 100%;
+        }
+
+        .social-icon {
+            color: rgba(255, 255, 255, 0.65);
+            font-size: 1.7rem;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+
+        .social-icon:hover {
+            color: #ffffff;
+            transform: translateY(-4px);
+            filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.7));
+        }
+
+        /* Popup Pencere Yapısı */
         .detail-overlay {
             position: fixed;
             top: 0; left: 0;
             width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.75);
-            backdrop-filter: blur(8px); /* Arkadaki ana sayfayı şıkça bulandırır */
+            backdrop-filter: blur(8px);
             z-index: 999;
             display: flex;
             justify-content: center;
@@ -145,13 +172,11 @@
             padding: 20px;
         }
 
-        /* Bu klas JavaScript ile eklendiğinde sayfa açılacak */
         .detail-overlay.active {
             opacity: 1;
             pointer-events: auto;
         }
 
-        /* Sayfa İçeriğini Tutan Kutu */
         .detail-content {
             position: relative;
             width: 100%;
@@ -172,7 +197,6 @@
             transform: scale(1);
         }
 
-        /* Sol Üst Köşedeki Geri Dön Butonu */
         .back-btn {
             align-self: flex-start;
             background: rgba(255, 255, 255, 0.1);
@@ -196,7 +220,6 @@
             box-shadow: 0 0 12px rgba(255,255,255,0.6);
         }
 
-        /* Gönderdiğin Özel Detay Resmi */
         .detail-img {
             width: 100%;
             border-radius: 12px;
@@ -213,55 +236,48 @@
     </div>
 
     <div class="links-container">
-
         <div class="card-wrapper">
-            <div class="link-card" style="background-image: url('IMGBB_KUTU_RESMİ_1');" onclick="openPage()">
+            <div class="link-card" style="background-image: url('https://i.ibb.co/ycwJGS8q/523c189be68a8404f574bd3fdf2c858c.jpg');" onclick="openPage()">
                 <div class="card-overlay"></div>
-                <div class="card-text">Kutu Metni 1</div>
+                <div class="card-text">Trendyol Mağazam</div>
                 <div class="card-options">⋮</div>
             </div>
         </div>
-
         <div class="card-wrapper">
-            <div class="link-card" style="background-image: url('IMGBB_KUTU_RESMİ_2');" onclick="openPage()">
+            <div class="link-card" style="background-image: url('https://i.ibb.co/pjYVr9hF/e925dd31bc2bacb60e3bea6672215e77.jpg');" onclick="openPage()">
                 <div class="card-overlay"></div>
-                <div class="card-text">Kutu Metni 2</div>
+                <div class="card-text">Danışmanlık Paketi</div>
                 <div class="card-options">⋮</div>
             </div>
         </div>
-
         <div class="card-wrapper">
-            <div class="link-card" style="background-image: url('IMGBB_KUTU_RESMİ_3');" onclick="openPage()">
+            <div class="link-card" style="background-image: url('https://i.ibb.co/TD4FY2dK/532b09dcb43b163aefbace1eb081e3c3.jpg');" onclick="openPage()">
                 <div class="card-overlay"></div>
-                <div class="card-text">Kutu Metni 3</div>
+                <div class="card-text">Müziklerim (Bilinçaltı)</div>
                 <div class="card-options">⋮</div>
             </div>
         </div>
-
         <div class="card-wrapper">
-            <div class="link-card" style="background-image: url('IMGBB_KUTU_RESMİ_4');" onclick="openPage()">
+            <div class="link-card" style="background-image: url('https://i.ibb.co/WNVvZKyt/d68384d27ba1e8f9fbfacf96f94c6085.jpg');" onclick="openPage()">
                 <div class="card-overlay"></div>
-                <div class="card-text">Kutu Metni 4</div>
+                <div class="card-text">Evrenin Kodları Kitap</div>
                 <div class="card-options">⋮</div>
             </div>
         </div>
-
         <div class="card-wrapper">
             <div class="link-card" style="background-image: url('IMGBB_KUTU_RESMİ_5');" onclick="openPage()">
                 <div class="card-overlay"></div>
-                <div class="card-text">Kutu Metni 5</div>
+                <div class="card-text">Birebir Özel Koçluk</div>
                 <div class="card-options">⋮</div>
             </div>
         </div>
-
         <div class="card-wrapper">
             <div class="link-card" style="background-image: url('IMGBB_KUTU_RESMİ_6');" onclick="openPage()">
                 <div class="card-overlay"></div>
-                <div class="card-text">Kutu Metni 6</div>
+                <div class="card-text">Doğum Günü Mesajı</div>
                 <div class="card-options">⋮</div>
             </div>
         </div>
-
         <div class="card-wrapper">
             <div class="link-card" style="background-image: url('IMGBB_KUTU_RESMİ_7');" onclick="openPage()">
                 <div class="card-overlay"></div>
@@ -269,7 +285,6 @@
                 <div class="card-options">⋮</div>
             </div>
         </div>
-
         <div class="card-wrapper">
             <div class="link-card" style="background-image: url('IMGBB_KUTU_RESMİ_8');" onclick="openPage()">
                 <div class="card-overlay"></div>
@@ -277,13 +292,22 @@
                 <div class="card-options">⋮</div>
             </div>
         </div>
+    </div>
 
+    <div class="social-container">
+        <a href="https://www.instagram.com/lucifersempires?igsh=MWtxcGVnbDdyNnFzOQ==" target="_blank" class="social-icon" title="Instagram"><i class="fab fa-instagram"></i></a>
+        <a href="https://youtube.com/@luciferthegodlevel?si=polvlxkmijqINgAL" target="_blank" class="social-icon" title="YouTube"><i class="fab fa-youtube"></i></a>
+        <a href="https://www.snapchat.com/@lucifersempires?share_id=e6FmmGt1EyA&locale=tr-TR" target="_blank" class="social-icon" title="Snapchat"><i class="fab fa-snapchat"></i></a>
+        <a href="https://x.com/lucifersempires" target="_blank" class="social-icon" title="X (Twitter)"><i class="fab fa-x-twitter"></i></a>
+        <a href="mailto:lucifersocialmedias@gmail.com" class="social-icon" title="Mail"><i class="fas fa-envelope"></i></a>
+        <a href="https://www.tiktok.com/@lucifersempire?_r=1&_t=ZS-96Y8PNwlpuZ" target="_blank" class="social-icon" title="TikTok"><i class="fab fa-tiktok"></i></a>
+        <a href="https://www.facebook.com/61589853249142/" target="_blank" class="social-icon" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+        <a href="https://open.spotify.com/artist/0YCZTGE1KIrLNA6Bzk63BD?si=0syptWTWSOSphoNvKIZS-Q&utm_source=copy-link" target="_blank" class="social-icon" title="Spotify"><i class="fab fa-spotify"></i></a>
     </div>
 
     <div class="detail-overlay" id="detailPage">
         <div class="detail-content">
             <button class="back-btn" onclick="closePage()">← Geri Dön</button>
-            
             <img class="detail-img" src="https://i.ibb.co/CsSf7L3V/1779375845781-2.jpg" alt="Detay Görseli">
         </div>
     </div>
@@ -291,19 +315,16 @@
     <script>
         const detailPage = document.getElementById('detailPage');
 
-        // Sayfayı Açma Fonksiyonu
         function openPage() {
             detailPage.classList.add('active');
-            document.body.style.overflow = 'hidden'; /* Arkadaki sayfa kaymasın */
+            document.body.style.overflow = 'hidden';
         }
 
-        // Sayfayı Kapatıp Geri Dönme Fonksiyonu
         function closePage() {
             detailPage.classList.remove('active');
-            document.body.style.overflow = 'auto'; /* Kaydırmayı tekrar aç */
+            document.body.style.overflow = 'auto';
         }
 
-        // Boş bir yere tıklandığında da kapatabilmek için opsiyonel alan
         detailPage.addEventListener('click', function(e) {
             if(e.target === detailPage) {
                 closePage();
@@ -312,4 +333,5 @@
     </script>
 
 </body>
-</html>
+                </html>
+                
