@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Developer Link Tree</title>
+    <title>VIP Link Tree</title>
     <style>
         * {
             margin: 0;
@@ -13,7 +13,7 @@
         }
 
         body {
-            /* Verdiğin yeni arka plan resmi */
+            /* Harika koyu arka plan resmi */
             background: url('https://i.ibb.co/84LyD71M/46fe29e1c6c79fa24dd869901611441e.jpg') no-repeat center center fixed;
             background-size: cover;
             min-height: 100vh;
@@ -22,6 +22,7 @@
             align-items: center;
             padding: 40px 20px;
             color: white;
+            overflow-x: hidden;
         }
 
         .header-area {
@@ -42,51 +43,41 @@
             max-width: 520px;
             display: flex;
             flex-direction: column;
-            gap: 24px; /* Yuvarlak efektlerin rahat görünmesi için araları biraz açtım */
+            gap: 24px;
         }
 
-        /* Efekt için kutuyu saran dış kapsayıcı */
+        /* Beyaz Yuvarlak Işıltı Efektleri */
         .card-wrapper {
             position: relative;
             width: 100%;
         }
 
-        /* Kutunun arkasından çıkan BEYAZ YUVARLAK (Işıltı) Efektleri */
         .card-wrapper::before, .card-wrapper::after {
             content: '';
             position: absolute;
             width: 80px;
             height: 80px;
-            background: rgba(255, 255, 255, 0.25);
+            background: rgba(255, 255, 255, 0.2);
             border-radius: 50%;
-            filter: blur(25px); /* Yumuşak yuvarlak ışık hissi verir */
+            filter: blur(25px);
             z-index: 1;
             transition: all 0.4s ease;
             pointer-events: none;
         }
-        /* Sol arkadaki yuvarlak */
-        .card-wrapper::before {
-            left: -10px;
-            top: -10px;
-        }
-        /* Sağ arkadaki yuvarlak */
-        .card-wrapper::after {
-            right: -10px;
-            bottom: -10px;
-        }
+        .card-wrapper::before { left: -10px; top: -10px; }
+        .card-wrapper::after { right: -10px; bottom: -10px; }
 
-        /* Hover durumunda yuvarlakların parlamasını artırır */
         .card-wrapper:hover::before, .card-wrapper:hover::after {
-            background: rgba(255, 255, 255, 0.45);
+            background: rgba(255, 255, 255, 0.4);
             width: 100px;
             height: 100px;
         }
 
-        /* Ana Kutu Tasarımı (Resim Komple Arka Plan Olacak) */
+        /* Ana Kutu Tasarımı */
         .link-card {
             position: relative;
             width: 100%;
-            height: 80px; /* Kutunun yüksekliği */
+            height: 80px;
             border-radius: 14px;
             border: 1px solid rgba(255, 255, 255, 0.2);
             display: flex;
@@ -97,32 +88,25 @@
             z-index: 2;
             transition: all 0.3s ease;
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            
-            /* Resim yüklenene kadar duracak şeffaf koyu renk */
             background-color: rgba(0, 0, 0, 0.4); 
             background-size: cover;
             background-position: center;
+            cursor: pointer;
         }
 
-        /* Kutuya dokununca veya üzerine gelince hafif büyüme efekti */
         .link-card:hover {
             transform: scale(1.02);
             border-color: rgba(255, 255, 255, 0.5);
             box-shadow: 0 6px 20px rgba(255,255,255,0.15);
         }
 
-        /* Resmin üzerine gelen koyu katman (Yazıların net okunması için) */
         .card-overlay {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0; width: 100%; height: 100%;
             background: linear-gradient(90deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.6) 100%);
             z-index: 1;
         }
 
-        /* Kutunun İçindeki Yazı Alanı */
         .card-text {
             position: relative;
             z-index: 2;
@@ -130,19 +114,95 @@
             text-align: center;
             font-size: 1.2rem;
             font-weight: 600;
-            letter-spacing: 0.5px;
             text-shadow: 0 2px 5px rgba(0,0,0,0.8);
             padding: 0 20px;
         }
 
-        /* Sağ taraftaki Üç Nokta Seçenek Simgesi */
         .card-options {
             position: relative;
             z-index: 2;
             font-size: 1.4rem;
-            text-shadow: 0 2px 5px rgba(0,0,0,0.8);
             padding-right: 20px;
             opacity: 0.8;
+        }
+
+        /* ======================================================= */
+        /* SÜPER DETAY SAYFASI (POPUP PENCERE ESPRİSİ)              */
+        /* ======================================================= */
+        .detail-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(8px); /* Arkadaki ana sayfayı şıkça bulandırır */
+            z-index: 999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.4s ease;
+            padding: 20px;
+        }
+
+        /* Bu klas JavaScript ile eklendiğinde sayfa açılacak */
+        .detail-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Sayfa İçeriğini Tutan Kutu */
+        .detail-content {
+            position: relative;
+            width: 100%;
+            max-width: 480px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transform: scale(0.8);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+        }
+
+        .detail-overlay.active .detail-content {
+            transform: scale(1);
+        }
+
+        /* Sol Üst Köşedeki Geri Dön Butonu */
+        .back-btn {
+            align-self: flex-start;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: white;
+            color: black;
+            box-shadow: 0 0 12px rgba(255,255,255,0.6);
+        }
+
+        /* Gönderdiğin Özel Detay Resmi */
+        .detail-img {
+            width: 100%;
+            border-radius: 12px;
+            object-fit: cover;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,255,255,0.1);
         }
     </style>
 </head>
@@ -155,70 +215,101 @@
     <div class="links-container">
 
         <div class="card-wrapper">
-            <a href="SİTE_LİNKİ_1" target="_blank" class="link-card" style="background-image: url('IMGBB_RESİM_LİNKİ_1');">
+            <div class="link-card" style="background-image: url('IMGBB_KUTU_RESMİ_1');" onclick="openPage()">
                 <div class="card-overlay"></div>
                 <div class="card-text">Kutu Metni 1</div>
                 <div class="card-options">⋮</div>
-            </a>
+            </div>
         </div>
 
         <div class="card-wrapper">
-            <a href="SİTE_LİNKİ_2" target="_blank" class="link-card" style="background-image: url('IMGBB_RESİM_LİNKİ_2');">
+            <div class="link-card" style="background-image: url('IMGBB_KUTU_RESMİ_2');" onclick="openPage()">
                 <div class="card-overlay"></div>
                 <div class="card-text">Kutu Metni 2</div>
                 <div class="card-options">⋮</div>
-            </a>
+            </div>
         </div>
 
         <div class="card-wrapper">
-            <a href="SİTE_LİNKİ_3" target="_blank" class="link-card" style="background-image: url('IMGBB_RESİM_LİNKİ_3');">
+            <div class="link-card" style="background-image: url('IMGBB_KUTU_RESMİ_3');" onclick="openPage()">
                 <div class="card-overlay"></div>
                 <div class="card-text">Kutu Metni 3</div>
                 <div class="card-options">⋮</div>
-            </a>
+            </div>
         </div>
 
         <div class="card-wrapper">
-            <a href="SİTE_LİNKİ_4" target="_blank" class="link-card" style="background-image: url('IMGBB_RESİM_LİNKİ_4');">
+            <div class="link-card" style="background-image: url('IMGBB_KUTU_RESMİ_4');" onclick="openPage()">
                 <div class="card-overlay"></div>
                 <div class="card-text">Kutu Metni 4</div>
                 <div class="card-options">⋮</div>
-            </a>
+            </div>
         </div>
 
         <div class="card-wrapper">
-            <a href="SİTE_LİNKİ_5" target="_blank" class="link-card" style="background-image: url('IMGBB_RESİM_LİNKİ_5');">
+            <div class="link-card" style="background-image: url('IMGBB_KUTU_RESMİ_5');" onclick="openPage()">
                 <div class="card-overlay"></div>
                 <div class="card-text">Kutu Metni 5</div>
                 <div class="card-options">⋮</div>
-            </a>
+            </div>
         </div>
 
         <div class="card-wrapper">
-            <a href="SİTE_LİNKİ_6" target="_blank" class="link-card" style="background-image: url('IMGBB_RESİM_LİNKİ_6');">
+            <div class="link-card" style="background-image: url('IMGBB_KUTU_RESMİ_6');" onclick="openPage()">
                 <div class="card-overlay"></div>
                 <div class="card-text">Kutu Metni 6</div>
                 <div class="card-options">⋮</div>
-            </a>
+            </div>
         </div>
 
         <div class="card-wrapper">
-            <a href="SİTE_LİNKİ_7" target="_blank" class="link-card" style="background-image: url('IMGBB_RESİM_LİNKİ_7');">
+            <div class="link-card" style="background-image: url('IMGBB_KUTU_RESMİ_7');" onclick="openPage()">
                 <div class="card-overlay"></div>
                 <div class="card-text">Kutu Metni 7</div>
                 <div class="card-options">⋮</div>
-            </a>
+            </div>
         </div>
 
         <div class="card-wrapper">
-            <a href="SİTE_LİNKİ_8" target="_blank" class="link-card" style="background-image: url('IMGBB_RESİM_LİNKİ_8');">
+            <div class="link-card" style="background-image: url('IMGBB_KUTU_RESMİ_8');" onclick="openPage()">
                 <div class="card-overlay"></div>
                 <div class="card-text">Kutu Metni 8</div>
                 <div class="card-options">⋮</div>
-            </a>
+            </div>
         </div>
 
     </div>
+
+    <div class="detail-overlay" id="detailPage">
+        <div class="detail-content">
+            <button class="back-btn" onclick="closePage()">← Geri Dön</button>
+            
+            <img class="detail-img" src="https://i.ibb.co/CsSf7L3V/1779375845781-2.jpg" alt="Detay Görseli">
+        </div>
+    </div>
+
+    <script>
+        const detailPage = document.getElementById('detailPage');
+
+        // Sayfayı Açma Fonksiyonu
+        function openPage() {
+            detailPage.classList.add('active');
+            document.body.style.overflow = 'hidden'; /* Arkadaki sayfa kaymasın */
+        }
+
+        // Sayfayı Kapatıp Geri Dönme Fonksiyonu
+        function closePage() {
+            detailPage.classList.remove('active');
+            document.body.style.overflow = 'auto'; /* Kaydırmayı tekrar aç */
+        }
+
+        // Boş bir yere tıklandığında da kapatabilmek için opsiyonel alan
+        detailPage.addEventListener('click', function(e) {
+            if(e.target === detailPage) {
+                closePage();
+            }
+        });
+    </script>
 
 </body>
 </html>
